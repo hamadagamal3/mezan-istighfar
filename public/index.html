@@ -348,7 +348,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   <p class="ded" id="ded" hidden></p>
   <p class="src-note" id="modeNote" hidden></p>
 
-  <p class="live" id="live" hidden><i class="dot" aria-hidden="true"></i><span>زوار الموقع استغفروا النهارده <b id="liveCount">٠</b> مرة</span></p>
+  <p class="live" id="live" hidden><i class="dot" aria-hidden="true"></i><span id="liveText">زوار الموقع استغفروا النهارده <b id="liveCount">٠</b> مرة</span></p>
   <div class="goal" id="goal" hidden>
     <div class="row"><span>هدف الأسبوع لكل الزوار</span><b id="goalText"></b></div>
     <div class="bar" aria-hidden="true"><span id="goalBar"></span></div>
@@ -600,7 +600,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el=id=>document.getElementById(id);
 
-  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:'',rid:'',refBy:null,refSent:false,ded:null,dedCounted:[],wird:33,wirdStreak:0,lastWirdDay:'',wirdOfferDay:'',history:{},graceWeek:'',presence:false,intent:{date:'',text:''},endSeenDay:'',firstDay:'',ibarHideUntil:0};
+  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:'',rid:'',refBy:null,refSent:false,ded:null,dedCounted:[],wird:33,wirdStreak:0,lastWirdDay:'',wirdOfferDay:'',history:{},graceWeek:'',presence:false,intent:{date:'',text:''},endSeenDay:'',firstDay:'',ibarHideUntil:0,countedDay:''};
   try{const s=JSON.parse(localStorage.getItem('istighfar')||'null'); if(s) state=Object.assign(state,s);}catch(e){}
   try{
     const qs=new URLSearchParams(location.search);
@@ -1200,7 +1200,8 @@ svg.scale.arrive{animation:arrive .8s ease}
   const GOVNAME=Object.fromEntries(GOVS);
   let pending=0, inflightN=0, flushT=null, serverToday=null, chData=null, chMissing=false;
   let weekTotal=null, weekStart='', govCounts={}, lastRank=null, statsOK=false;
-  let v3=true, dedData=null, refData=null;
+  let v3=true, v5=true, dedData=null, refData=null, serverPeople=null;
+  const PEOPLE_MIN=20;
   function scheduleFlush(){ if(!online) return; clearTimeout(flushT); flushT=setTimeout(flush,2500); }
   async function flush(keep){
     if(!online||!pending||inflightN) return;
@@ -1213,8 +1214,15 @@ svg.scale.arrive{animation:arrive .8s ease}
     if(v3&&dedCode){body.p_ded=dedCode;body.p_ded_new=dedNew;}
     if(v3&&state.refBy){body.p_ref=state.refBy;body.p_ref_new=refNew;}
     try{
+      const newToday=v5&&state.countedDay!==todayKey();
+      if(newToday) body.p_new_today=true;
       try{ await rpc('add_istighfar',body,keep); }
-      catch(e){ if(body.p_ded||body.p_ref){ v3=false; delete body.p_ded; delete body.p_ded_new; delete body.p_ref; delete body.p_ref_new; await rpc('add_istighfar',body,keep); } else throw e; }
+      catch(e){
+        let ok=false;
+        if('p_new_today' in body){ v5=false; delete body.p_new_today; try{ await rpc('add_istighfar',body,keep); ok=true; }catch(e2){} }
+        if(!ok){ if(body.p_ded||body.p_ref){ v3=false; delete body.p_ded; delete body.p_ded_new; delete body.p_ref; delete body.p_ref_new; await rpc('add_istighfar',body,keep); } else throw e; }
+      }
+      if(body.p_new_today){ state.countedDay=todayKey(); if(serverPeople!=null) serverPeople+=1; save(); }
       if(body.p_ded){ if(dedNew){state.dedCounted=(state.dedCounted||[]).concat(dedCode).slice(-50);} if(dedData&&dedData.code===dedCode){dedData.count=Number(dedData.count)+n; if(dedNew) dedData.people=Number(dedData.people)+1;} }
       if(body.p_ref&&refNew) state.refSent=true;
       if(body.p_ded||body.p_ref) save();
@@ -1237,7 +1245,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     }
     if(!st){ try{ st=await rpc('site_stats'); }catch(e){} }
     if(st){
-      serverToday=Number(st.today); weekTotal=Number(st.week); weekStart=String(st.week_start||'');
+      serverToday=Number(st.today); serverPeople=(st.people!=null)?Number(st.people):null; weekTotal=Number(st.week); weekStart=String(st.week_start||'');
       govCounts={}; (st.govs||[]).forEach(g=>{govCounts[g.gov]=Number(g.count);}); statsOK=true;
     }else{
       statsOK=false;
@@ -1262,7 +1270,16 @@ svg.scale.arrive{animation:arrive .8s ease}
   function renderShared(){
     if(!online) return;
     const live=el('live');
-    if(serverToday!=null){live.hidden=false; el('liveCount').textContent=fmt(serverToday+pending+inflightN);}
+    if(serverToday!=null){
+      live.hidden=false;
+      const times=serverToday+pending+inflightN;
+      const ppl=serverPeople==null?null:serverPeople+((v5&&state.countedDay!==todayKey()&&(pending+inflightN)>0)?1:0);
+      const lt=el('liveText'); lt.innerHTML='';
+      const bt=document.createElement('b'); bt.id='liveCount'; bt.textContent=fmt(times);
+      if(ppl!=null&&ppl>=PEOPLE_MIN){ const bp=document.createElement('b'); bp.textContent=fmt(ppl);
+        lt.append(bp,' '+((ppl>=3&&ppl<=10)?'أشخاص':'شخص')+' استغفروا النهارده ',bt,' مرة'); }
+      else lt.append('زوار الموقع استغفروا النهارده ',bt,' مرة');
+    }
     el('challenge').hidden=false;
     const active=!!(state.challenge&&chData);
     el('chNone').hidden=active; el('chActive').hidden=!active;
