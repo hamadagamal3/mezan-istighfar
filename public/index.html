@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ميزان الاستغفار</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4ECE8; --surface:#D3E0DB; --brass:#A07A34; --brass-deep:#76592A;
+  --pearl:#FFF4D6; --pearl-edge:#C9A962; --stone:#555B67; --stone-edge:#3A3F49;
+  --text:#15363B; --muted:#52706B; --btn-text:#FFF8E6; --veil:rgba(20,40,42,.55); --card:#F3F7F5;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E2A2F; --surface:#163A40; --brass:#C8A15A; --brass-deep:#8E6E33;
+    --pearl:#F6E9C4; --pearl-edge:#F6E9C4; --stone:#4B505C; --stone-edge:#2E323A;
+    --text:#ECE4D1; --muted:#95AEA9; --btn-text:#1A2F31; --veil:rgba(4,16,18,.75); --card:#143439;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E2A2F; --surface:#163A40; --brass:#C8A15A; --brass-deep:#8E6E33;
+  --pearl:#F6E9C4; --pearl-edge:#F6E9C4; --stone:#4B505C; --stone-edge:#2E323A;
+  --text:#ECE4D1; --muted:#95AEA9; --btn-text:#1A2F31; --veil:rgba(4,16,18,.75); --card:#143439;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:'IBM Plex Sans Arabic',system-ui,'Segoe UI',Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
+main{max-width:460px;margin:0 auto;padding:18px 20px 36px;display:flex;flex-direction:column;align-items:center;text-align:center}
+h1{font-family:'Amiri',serif;font-weight:700;font-size:30px;margin:6px 0 0}
+.intro{color:var(--muted);font-size:14px;line-height:1.7;margin:4px 0 0;max-width:36ch}
+
+/* sky of stars */
+.sky{min-height:34px;margin:14px 0 0;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;max-width:320px}
+.sky svg{width:20px;height:20px;fill:var(--pearl);stroke:var(--pearl-edge);stroke-width:1;filter:drop-shadow(0 0 4px color-mix(in srgb,var(--pearl) 60%,transparent))}
+.sky .new{animation:land .6s ease}
+@keyframes land{0%{transform:scale(1.8)}100%{transform:scale(1)}}
+.sky .more{font-size:14px;color:var(--muted)}
+.sky .empty{font-size:13px;color:var(--muted)}
+.flying{position:fixed;width:26px;height:26px;z-index:20;pointer-events:none;fill:var(--pearl);filter:drop-shadow(0 0 10px var(--pearl))}
+
+svg.scale{width:100%;max-width:420px;height:auto;margin:2px 0 0;overflow:visible}
+.beam-bar,.post{fill:var(--brass)}
+.brass-dark{fill:var(--brass-deep)}
+.string{stroke:var(--brass);stroke-width:1.4;fill:none;opacity:.8}
+.bowl{fill:var(--brass)}
+.st{transition:opacity .55s ease, transform .7s cubic-bezier(.2,.8,.2,1);transform-box:fill-box;transform-origin:center}
+.bad{fill:var(--stone);stroke:var(--stone-edge);stroke-width:1.2}
+.good{fill:var(--pearl);stroke:var(--pearl-edge);stroke-width:1}
+.bad.off{opacity:0;transform:translateY(-34px) scale(.3)}
+.good.off{opacity:0;transform:translateY(-46px)}
+.noanim .st{transition:none!important}
+.glowing .good{filter:drop-shadow(0 0 5px var(--pearl))}
+
+.phrase{font-family:'Amiri',serif;font-size:27px;line-height:1.8;margin:8px 0 14px;min-height:1.8em;max-width:30ch}
+.phrase.long{font-size:19px;line-height:1.9}
+.press{width:164px;height:164px;border-radius:50%;border:3px solid var(--brass-deep);
+  background:radial-gradient(circle at 50% 38%, color-mix(in srgb,var(--brass) 70%, white) 0%, var(--brass) 55%, var(--brass-deep) 100%);
+  color:var(--btn-text);font-family:'Amiri',serif;font-weight:700;font-size:26px;cursor:pointer;
+  box-shadow:0 8px 24px color-mix(in srgb,var(--brass) 35%, transparent);transition:transform .12s ease;user-select:none;touch-action:manipulation}
+.press:active{transform:scale(.95)}
+.press:focus-visible,.chip:focus-visible,.reset:focus-visible,.close:focus-visible{outline:3px solid var(--text);outline-offset:4px}
+
+.tally{margin:22px 0 4px;font-size:17px}
+.tally strong{font-size:30px;font-weight:600;margin-inline-end:6px}
+.bar{width:100%;max-width:280px;height:6px;border-radius:3px;background:var(--surface);overflow:hidden;margin:8px 0}
+.bar span{display:block;height:100%;width:0;background:var(--brass);transition:width .4s ease}
+.note{color:var(--muted);font-size:14px;line-height:1.7;margin:4px 0 0;min-height:1.7em}
+.note.done{color:var(--brass);font-weight:500}
+
+/* sealed letter */
+.letter{display:flex;align-items:center;gap:14px;margin:22px 0 0;padding:12px 16px;border:1px dashed var(--brass);border-radius:14px;max-width:320px;width:100%;text-align:start}
+.letter .wax{flex:none;width:44px;height:44px}
+.letter b{display:block;font-size:15px;font-weight:600}
+.letter span{font-size:14px;color:var(--muted)}
+.letter.near{border-style:solid;background:color-mix(in srgb,var(--brass) 12%,transparent)}
+.letter.near .wax{animation:wobble .5s ease}
+.letter.near span{color:var(--brass);font-weight:600}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}50%{transform:rotate(10deg)}75%{transform:rotate(-6deg)}}
+.wax circle.outer{fill:var(--brass)}
+.wax circle.inner{fill:none;stroke:var(--brass-deep);stroke-width:2}
+.wax path{fill:var(--brass-deep)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:26px 0 0}
+.chip{font:inherit;font-size:14px;padding:8px 14px;border-radius:20px;border:1px solid var(--brass);background:transparent;color:var(--text);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--brass);color:var(--btn-text)}
+.total{color:var(--muted);font-size:13px;margin:22px 0 0}
+.reset{font:inherit;font-size:13px;color:var(--muted);background:none;border:none;text-decoration:underline;cursor:pointer;margin-top:6px;padding:6px}
+blockquote{font-family:'Amiri',serif;font-size:17px;line-height:1.9;margin:30px 0 0;padding-top:18px;border-top:1px solid var(--surface);max-width:34ch}
+blockquote cite{display:block;font-style:normal;font-size:13px;color:var(--muted);font-family:'IBM Plex Sans Arabic',sans-serif}
+
+/* reveal */
+.reveal{position:fixed;inset:0;z-index:30;background:var(--veil);display:flex;align-items:center;justify-content:center;padding:24px}
+.reveal[hidden]{display:none}
+.card{background:var(--card);color:var(--text);border:1px solid var(--brass);border-radius:18px;max-width:380px;width:100%;padding:28px 22px 22px;text-align:center;position:relative;animation:cardIn .4s ease}
+@keyframes cardIn{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.card .wax{width:84px;height:84px;display:block;margin:6px auto}
+.card.opening .wax{animation:crack .9s ease forwards}
+@keyframes crack{0%{transform:scale(1)}30%{transform:scale(1.1) rotate(-8deg)}55%{transform:scale(1.05) rotate(8deg)}100%{transform:scale(1.7);opacity:0}}
+.card .kicker{font-size:14px;color:var(--muted);margin:0}
+.card .msg{font-family:'Amiri',serif;font-size:23px;line-height:1.9;margin:10px 0 4px;opacity:0;transition:opacity .8s ease}
+.card .src{font-size:13px;color:var(--muted);margin:0 0 18px;opacity:0;transition:opacity .8s ease .3s}
+.card.open .msg,.card.open .src{opacity:1}
+.card.open .wax{display:none}
+.close{font:inherit;font-size:16px;font-weight:600;padding:10px 26px;border-radius:24px;border:none;background:var(--brass);color:var(--btn-text);cursor:pointer;opacity:0;transition:opacity .5s ease .6s}
+.card.open .close{opacity:1}
+@media (prefers-reduced-motion: reduce){.st,.bar span{transition:none}.sky .new,.letter.near .wax,.card,.card.opening .wax{animation:none}}
+
+/* mode */
+.modes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 0}
+.modes-label{width:100%;font-size:13px;color:var(--muted)}
+.person{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:10px 0 0;width:100%}
+.person[hidden]{display:none}
+input.field,select.field{font:inherit;font-size:15px;padding:9px 12px;border-radius:10px;border:1px solid var(--brass);background:var(--bg);color:var(--text);min-width:0}
+input.field{flex:1 1 150px;max-width:220px}
+.solid{font:inherit;font-size:14px;font-weight:600;padding:9px 16px;border-radius:20px;border:none;background:var(--brass);color:var(--btn-text);cursor:pointer}
+.linkbtn{font:inherit;font-size:13px;color:var(--muted);background:none;border:none;text-decoration:underline;cursor:pointer;padding:6px}
+.solid:focus-visible,.linkbtn:focus-visible,.field:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+/* live */
+.live{display:flex;align-items:center;gap:8px;font-size:14px;margin:12px 0 0;color:var(--text)}
+.live[hidden]{display:none}
+.live b{font-weight:600;font-variant-numeric:tabular-nums}
+.dot{width:8px;height:8px;border-radius:50%;background:#4CAF7A;box-shadow:0 0 0 0 rgba(76,175,122,.6);animation:ping 1.8s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 8px rgba(76,175,122,0)}100%{box-shadow:0 0 0 0 rgba(76,175,122,0)}}
+/* moon */
+.daybar{display:flex;align-items:center;gap:12px;margin:16px 0 0;text-align:start}
+.daybar svg{width:46px;height:46px;flex:none}
+.daybar svg.pop{animation:pop .8s ease}
+@keyframes pop{40%{transform:scale(1.25)}}
+.moon-base{fill:var(--surface);stroke:color-mix(in srgb,var(--pearl-edge) 50%,transparent);stroke-width:1}
+.moon-lit{fill:var(--pearl);filter:drop-shadow(0 0 4px color-mix(in srgb,var(--pearl) 60%,transparent))}
+.daybar b{display:block;font-size:15px;font-weight:600}
+.daybar span{font-size:13px;color:var(--muted)}
+/* challenge */
+.challenge{margin:22px 0 0;padding:16px;border:1px solid var(--surface);border-radius:14px;width:100%;max-width:340px;background:color-mix(in srgb,var(--surface) 45%,transparent)}
+.challenge[hidden],.challenge [hidden]{display:none}
+.challenge b{display:block;font-size:16px;font-weight:600;margin-bottom:4px}
+.challenge .sub{display:block;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px}
+.challenge .form{display:flex;flex-direction:column;gap:8px}
+.challenge .form input.field{max-width:none}
+.challenge .bar{max-width:none;margin:10px 0 6px;height:8px}
+.challenge .row{display:flex;justify-content:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.err{color:#C0564B;font-size:13px;margin:4px 0 0;min-height:1em}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:20px;font-size:14px;z-index:40;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.src-note{font-size:12px;color:var(--muted);margin:6px 0 0;max-width:34ch;line-height:1.7}
+.src-note[hidden],.chips[hidden]{display:none}
+@media (prefers-reduced-motion: reduce){.dot,.daybar svg.pop{animation:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1>ميزان الاستغفار</h1>
+  <p class="intro" id="intro"></p>
+
+  <div class="modes" id="modes" role="group" aria-label="تستغفر لمين">
+    <span class="modes-label">تستغفر لمين؟</span>
+  </div>
+  <div class="person" id="person" hidden>
+    <input class="field" id="personName" maxlength="30" placeholder="اسمه أو اسمها" aria-label="الاسم">
+    <button class="chip" type="button" id="gM" aria-pressed="true">له</button>
+    <button class="chip" type="button" id="gF" aria-pressed="false">لها</button>
+    <button class="solid" type="button" id="personShare" hidden>ابعت الرابط</button>
+  </div>
+  <p class="src-note" id="modeNote" hidden></p>
+
+  <p class="live" id="live" hidden><i class="dot" aria-hidden="true"></i><span>زوار الموقع استغفروا النهارده <b id="liveCount">٠</b> مرة</span></p>
+
+  <div class="daybar">
+    <svg id="moon" viewBox="0 0 40 40" aria-hidden="true"><circle class="moon-base" cx="20" cy="20" r="17"/><path class="moon-lit" id="moonLit" d=""/></svg>
+    <div><b id="moonTitle"></b><span id="moonText"></span></div>
+  </div>
+
+  <div class="sky" id="sky" aria-live="polite"></div>
+
+  <svg class="scale noanim" id="scale" viewBox="0 0 360 272" aria-hidden="true">
+    <rect class="post" x="176" y="60" width="8" height="186" rx="3"/>
+    <path class="brass-dark" d="M130 262 Q180 236 230 262 Z"/>
+    <rect class="post" x="118" y="258" width="124" height="8" rx="4"/>
+    <g id="panL"></g>
+    <g id="panR"></g>
+    <g id="beam">
+      <rect class="beam-bar" x="46" y="56" width="268" height="8" rx="4"/>
+      <path class="brass-dark" d="M180 22 L186 50 L174 50 Z"/>
+      <circle class="brass-dark" cx="180" cy="60" r="9"/>
+      <circle cx="46" cy="60" r="5" class="brass-dark"/>
+      <circle cx="314" cy="60" r="5" class="brass-dark"/>
+    </g>
+  </svg>
+
+  <p class="phrase" id="phrase"></p>
+  <button class="press" id="press" type="button">أستغفر الله</button>
+
+  <p class="tally" aria-live="polite"><strong id="count">٠</strong><span>استغفارة اليوم</span></p>
+  <div class="bar" aria-hidden="true"><span id="bar"></span></div>
+  <p class="note" id="note"></p>
+
+  <div class="letter" id="letter">
+    <svg class="wax" viewBox="0 0 44 44" aria-hidden="true"><circle class="outer" cx="22" cy="22" r="20"/><circle class="inner" cx="22" cy="22" r="14"/><path d="M22 12 L24.5 19.5 L32 22 L24.5 24.5 L22 32 L19.5 24.5 L12 22 L19.5 19.5 Z"/></svg>
+    <div><b>رسالة مختومة</b><span id="letterText"></span></div>
+  </div>
+
+  <section class="challenge" id="challenge" hidden>
+    <div id="chNone">
+      <b>تحدي جماعي</b>
+      <span class="sub">اعمل هدف مشترك مع أهلك أو صحابك، وكل استغفار من أي حد فيكم بيقرّبكم منه</span>
+      <button class="solid" type="button" id="chStart">اعمل تحدي</button>
+      <div class="form" id="chForm" hidden>
+        <input class="field" id="chName" maxlength="40" placeholder="اسم التحدي، مثلًا: عيلة جمال" aria-label="اسم التحدي">
+        <select class="field" id="chGoal" aria-label="الهدف">
+          <option value="500">٥٠٠ استغفارة</option>
+          <option value="1000" selected>١٬٠٠٠ استغفارة</option>
+          <option value="5000">٥٬٠٠٠ استغفارة</option>
+          <option value="10000">١٠٬٠٠٠ استغفارة</option>
+          <option value="100000">١٠٠٬٠٠٠ استغفارة</option>
+        </select>
+        <button class="solid" type="button" id="chCreate">ابدأ التحدي</button>
+        <p class="err" id="chErr"></p>
+      </div>
+    </div>
+    <div id="chActive" hidden>
+      <b id="chTitle"></b>
+      <div class="bar" aria-hidden="true"><span id="chBar"></span></div>
+      <span class="sub" id="chText"></span>
+      <div class="row">
+        <button class="solid" type="button" id="chShare">ابعت الرابط</button>
+        <button class="linkbtn" type="button" id="chLeave">خروج من التحدي</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="chips" id="chips" role="group" aria-label="صيغة الاستغفار"></div>
+
+  <p class="total" id="total"></p>
+  <button class="reset" id="reset" type="button">تصفير عدّاد اليوم</button>
+
+  <blockquote>«إنه ليُغانُ على قلبي، وإني لأستغفرُ الله في اليوم مائة مرة»
+    <cite>رواه مسلم</cite></blockquote>
+</main>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="reveal" id="reveal" hidden role="dialog" aria-modal="true" aria-labelledby="revealKicker">
+  <div class="card" id="card">
+    <p class="kicker" id="revealKicker"></p>
+    <svg class="wax" viewBox="0 0 44 44" aria-hidden="true"><circle class="outer" cx="22" cy="22" r="20"/><circle class="inner" cx="22" cy="22" r="14"/><path d="M22 12 L24.5 19.5 L32 22 L24.5 24.5 L22 32 L19.5 24.5 L12 22 L19.5 19.5 Z"/></svg>
+    <p class="msg" id="revealMsg"></p>
+    <p class="src" id="revealSrc"></p>
+    <button class="close" id="close" type="button">كمّل الاستغفار</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ضع بيانات Supabase هنا بعد ما ترفع الموقع على استضافتك (Project Settings → API) */
+  const SUPABASE_URL='https://xygdevtnfpiuvdrtwebi.supabase.co';
+  const SUPABASE_ANON_KEY='sb_publishable_-jn1Tfca_6m926LrAQlFPw_SWGfXxpJ';
+  const online=!!(SUPABASE_URL&&SUPABASE_ANON_KEY);
+
+  const NS='http://www.w3.org/2000/svg', N=12, MAXA=14, ARM=134, PX=180, PY=60, GOAL=100;
+  const STAR_PATH='M12 1 L14.6 9.4 L23 12 L14.6 14.6 L12 23 L9.4 14.6 L1 12 L9.4 9.4 Z';
+  const PHRASES=[
+    {label:'أستغفر الله', text:'أستغفر الله'},
+    {label:'وأتوب إليه', text:'أستغفر الله العظيم وأتوب إليه'},
+    {label:'الحي القيوم', text:'أستغفر الله الذي لا إله إلا هو الحيّ القيوم وأتوب إليه'},
+    {label:'سيد الاستغفار', long:true, text:'اللهم أنت ربي لا إله إلا أنت، خلقتني وأنا عبدك، وأنا على عهدك ووعدك ما استطعت، أعوذ بك من شر ما صنعت، أبوء لك بنعمتك عليّ، وأبوء بذنبي، فاغفر لي فإنه لا يغفر الذنوب إلا أنت'}
+  ];
+  const LETTERS=[
+    {at:33, msg:'﴿فَقُلْتُ اسْتَغْفِرُوا رَبَّكُمْ إِنَّهُ كَانَ غَفَّارًا ۝ يُرْسِلِ السَّمَاءَ عَلَيْكُم مِّدْرَارًا﴾', src:'سورة نوح: ١٠–١١'},
+    {at:70, msg:'«والله إني لأستغفر الله وأتوب إليه في اليوم أكثر من سبعين مرة»', src:'رواه البخاري'},
+    {at:100, msg:'﴿وَيُمْدِدْكُم بِأَمْوَالٍ وَبَنِينَ وَيَجْعَل لَّكُمْ جَنَّاتٍ وَيَجْعَل لَّكُمْ أَنْهَارًا﴾', src:'سورة نوح: ١٢'},
+    {at:200, msg:'﴿وَمَا كَانَ اللَّهُ مُعَذِّبَهُمْ وَهُمْ يَسْتَغْفِرُونَ﴾', src:'سورة الأنفال: ٣٣'},
+    {at:300, msg:'«طوبى لمن وجد في صحيفته استغفارًا كثيرًا»', src:'رواه ابن ماجه'},
+    {at:500, msg:'﴿وَمَن يَعْمَلْ سُوءًا أَوْ يَظْلِمْ نَفْسَهُ ثُمَّ يَسْتَغْفِرِ اللَّهَ يَجِدِ اللَّهَ غَفُورًا رَّحِيمًا﴾', src:'سورة النساء: ١١٠'},
+    {at:1000, msg:'﴿قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ ۚ إِنَّ اللَّهَ يَغْفِرُ الذُّنُوبَ جَمِيعًا﴾', src:'سورة الزمر: ٥٣'}
+  ];
+  const MODES=[
+    {id:'self',label:'لنفسي'},
+    {id:'parents',label:'لوالديّ'},
+    {id:'believers',label:'للمؤمنين'},
+    {id:'person',label:'لشخص عزيز'}
+  ];
+  const fmt=n=>n.toLocaleString('ar-EG');
+  const keyOf=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+  const todayKey=()=>keyOf(new Date());
+  const yesterdayKey=()=>{const d=new Date();d.setDate(d.getDate()-1);return keyOf(d);};
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const el=id=>document.getElementById(id);
+
+  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null};
+  try{const s=JSON.parse(localStorage.getItem('istighfar')||'null'); if(s) state=Object.assign(state,s);}catch(e){}
+  try{
+    const qs=new URLSearchParams(location.search);
+    if(qs.get('c')) state.challenge=qs.get('c').replace(/[^a-z0-9]/gi,'').slice(0,20)||null;
+    if(qs.get('for')){state.mode='person';state.personName=qs.get('for').slice(0,30);state.personG=qs.get('g')==='f'?'f':'m';}
+  }catch(e){}
+  if(state.date!==todayKey()){state.date=todayKey();state.today=0;}
+  const save=()=>{try{localStorage.setItem('istighfar',JSON.stringify(state));}catch(e){}};
+
+  /* ---------- scale ---------- */
+  const slots=[[-28,83],[-14,83],[0,83],[14,83],[28,83],[-21,70],[-7,70],[7,70],[21,70],[-14,57],[0,57],[14,57]];
+  function buildPan(g,cls){
+    const mk=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||g).appendChild(e);return e;};
+    mk('path',{class:'string',d:'M0 0 L-52 90 M0 0 L52 90'});
+    const stones=mk('g',{});
+    const list=slots.map(([x,y])=>mk('circle',{cx:x,cy:y,r:7,class:'st '+cls},stones));
+    mk('path',{class:'bowl',d:'M-56 90 Q0 120 56 90 Z'});
+    mk('circle',{class:'brass-dark',cx:0,cy:0,r:3});
+    return {stones,list};
+  }
+  const svg=el('scale'), panL=el('panL'), panR=el('panR'), beam=el('beam');
+  const bad=buildPan(panL,'bad'), good=buildPan(panR,'good');
+
+  let cur=null, target=0, raf=null, holding=false, pendingStars=0;
+  function place(a){
+    const r=a*Math.PI/180, dx=ARM*Math.cos(r), dy=ARM*Math.sin(r);
+    beam.setAttribute('transform','rotate('+a.toFixed(2)+' '+PX+' '+PY+')');
+    panL.setAttribute('transform','translate('+(PX-dx).toFixed(2)+' '+(PY-dy).toFixed(2)+')');
+    panR.setAttribute('transform','translate('+(PX+dx).toFixed(2)+' '+(PY+dy).toFixed(2)+')');
+  }
+  function tick(){
+    const d=target-cur;
+    if(Math.abs(d)<0.02||reduce){cur=target;place(cur);raf=null;return;}
+    cur+=d*0.07; place(cur); raf=requestAnimationFrame(tick);
+  }
+  function stonesFor(c){
+    if(c<N) return [c,N-c];
+    if(holding && c%N===0) return [N,0];
+    return [c%N,0];
+  }
+
+  /* ---------- sky ---------- */
+  function starSvg(isNew){
+    const s=document.createElementNS(NS,'svg'); s.setAttribute('viewBox','0 0 24 24');
+    const p=document.createElementNS(NS,'path'); p.setAttribute('d',STAR_PATH); s.appendChild(p);
+    if(isNew) s.classList.add('new'); return s;
+  }
+  let shownStars=-1;
+  function renderSky(){
+    const n=Math.max(0,Math.floor(state.today/N)-pendingStars);
+    if(n===shownStars) return;
+    const sky=el('sky'), grew=shownStars>=0 && n>shownStars; sky.innerHTML='';
+    if(n===0){const t=document.createElement('span');t.className='empty';t.textContent='أول نجمة لما الميزان يتملي';sky.appendChild(t);}
+    const show=Math.min(n,14);
+    for(let i=0;i<show;i++) sky.appendChild(starSvg(grew && i===show-1));
+    if(n>show){const m=document.createElement('span');m.className='more';m.textContent='+'+fmt(n-show);sky.appendChild(m);}
+    sky.setAttribute('aria-label','نجوم اليوم: '+fmt(n));
+    shownStars=n;
+  }
+
+  /* ---------- sealed letter ---------- */
+  const nextLetter=()=>LETTERS.find(l=>l.at>state.today);
+  function renderLetter(){
+    const L=nextLetter(), box=el('letter'), t=el('letterText');
+    if(!L){t.textContent='فتحت كل رسائل النهارده، تقبّل الله';box.classList.remove('near');return;}
+    const left=L.at-state.today;
+    t.textContent= left<=3 ? 'قرّبت! باقي '+fmt(left)+(left===1?' استغفارة':' استغفارات') : 'تنفتح بعد '+fmt(left)+' استغفارة';
+    box.classList.remove('near');
+    if(left<=3){void box.offsetWidth; box.classList.add('near');}
+  }
+
+  /* ---------- main render ---------- */
+  function render(){
+    const [light,dark]=stonesFor(state.today);
+    bad.list.forEach((c,i)=>c.classList.toggle('off',i>=dark));
+    good.list.forEach((c,i)=>c.classList.toggle('off',i>=light));
+    target=(light-dark)/N*MAXA;
+    if(cur===null){cur=target;place(cur);} else if(!raf){raf=requestAnimationFrame(tick);}
+    el('count').textContent=fmt(state.today);
+    el('bar').style.width=Math.min(100,state.today/GOAL*100)+'%';
+    const note=el('note');
+    if(state.today>=GOAL){note.textContent='أتممت مائة استغفارة اليوم، تقبّل الله منك';note.classList.add('done');}
+    else{note.textContent=modeCopy().note+'، باقي '+fmt(GOAL-state.today)+' على المائة';note.classList.remove('done');}
+    el('total').textContent='مجموع استغفارك على هذا الجهاز: '+fmt(state.total);
+    renderMode(); renderSky(); renderLetter(); renderMoon();
+  }
+
+  /* ---------- full scale → star rises ---------- */
+  function flyStar(){
+    const from=panR.getBoundingClientRect(), sky=el('sky').getBoundingClientRect();
+    const f=document.createElementNS(NS,'svg'); f.setAttribute('viewBox','0 0 24 24'); f.setAttribute('class','flying');
+    const p=document.createElementNS(NS,'path'); p.setAttribute('d',STAR_PATH); f.appendChild(p);
+    document.body.appendChild(f);
+    const x0=from.left+from.width/2-13, y0=from.top+from.height*0.55-13;
+    const x1=sky.left+sky.width/2-13, y1=sky.top+sky.height/2-13;
+    const done=()=>{f.remove(); pendingStars=Math.max(0,pendingStars-1); renderSky();};
+    if(reduce||!f.animate){done();return;}
+    const a=f.animate([
+      {transform:`translate(${x0}px,${y0}px) scale(.4)`,opacity:0},
+      {transform:`translate(${x0}px,${y0-40}px) scale(1.6)`,opacity:1,offset:.3},
+      {transform:`translate(${x1}px,${y1}px) scale(1)`,opacity:1}
+    ],{duration:1100,easing:'cubic-bezier(.3,.1,.2,1)'});
+    a.onfinish=done;
+  }
+  function gather(){
+    pendingStars++;
+    if(reduce){holding=false;render();flyStar();return;}
+    svg.classList.add('glowing');
+    good.list.forEach((c,i)=>{const [x,y]=slots[i];c.style.transform=`translate(${-x}px,${70-y}px) scale(.2)`;c.style.opacity='0';});
+    setTimeout(()=>{
+      svg.classList.remove('glowing');
+      flyStar();
+      svg.classList.add('noanim');
+      holding=false;
+      good.list.forEach(c=>{c.style.transform='';c.style.opacity='';});
+      render();
+      requestAnimationFrame(()=>requestAnimationFrame(()=>svg.classList.remove('noanim')));
+    },650);
+  }
+
+  /* ---------- reveal letter ---------- */
+  function openLetter(L){
+    const card=el('card'), rv=el('reveal');
+    el('revealKicker').textContent='فتحت رسالة الاستغفارة رقم '+fmt(L.at);
+    el('revealMsg').textContent=L.msg; el('revealSrc').textContent=L.src;
+    card.className='card'; rv.hidden=false;
+    if(reduce){card.classList.add('open');el('close').focus();return;}
+    setTimeout(()=>card.classList.add('opening'),500);
+    setTimeout(()=>{card.classList.add('open');el('close').focus();},1400);
+  }
+  function closeLetter(){el('reveal').hidden=true;el('press').focus();}
+  el('close').addEventListener('click',closeLetter);
+  el('reveal').addEventListener('click',e=>{if(e.target.id==='reveal'&&el('card').classList.contains('open'))closeLetter();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el('reveal').hidden)closeLetter();});
+
+  /* ---------- controls ---------- */
+  /* ---------- mode: who you seek forgiveness for ---------- */
+  function personLabel(){return (state.personName||'').trim();}
+  function modeCopy(){
+    const n=personLabel(), f=state.personG==='f';
+    switch(state.mode){
+      case 'parents': return {phrase:'ربِّ اغفر لي ولوالديّ، ربِّ ارحمهما كما ربّياني صغيرًا',
+        intro:'استغفارك لوالديك، نسأل الله أن يثقّل به موازينهما', note:'نسأل الله أن يمحو به عنهما سيئة ويكتب لهما حسنة'};
+      case 'believers': return {phrase:'اللهم اغفر للمؤمنين والمؤمنات، والمسلمين والمسلمات، الأحياء منهم والأموات', long:true,
+        intro:'استغفارك لكل المؤمنين، الأحياء منهم والأموات', note:'نسأل الله أن يكتب لك بكل مؤمن ومؤمنة حسنة',
+        src:'«من استغفر للمؤمنين والمؤمنات كتب الله له بكل مؤمن ومؤمنة حسنة» رواه الطبراني وحسّنه الألباني'};
+      case 'person': return n ? {phrase:'اللهم اغفر لـ'+n+' و'+(f?'ارحمها':'ارحمه'),
+        intro:'استغفارك لـ'+n+'، نسأل الله أن يجعله نورًا '+(f?'لها':'له'), note:'نسأل الله أن يمحو به عن'+(f?'ها':'ه')+' سيئة ويكتب '+(f?'لها':'له')+' حسنة'}
+        : {phrase:'اكتب الاسم فوق', intro:'اختار حد عزيز عليك وادعيله بالمغفرة', note:'نسأل الله أن يمحو به السيئات'};
+      default: {const p=PHRASES[state.idx]||PHRASES[0];
+        return {phrase:p.text,long:p.long,intro:'مع كل استغفار تخفّ الكفة المظلمة وتثقل كفة النور، وكل ما الكفة تتملي تطلع منها نجمة',note:'نسأل الله أن يمحو بها سيئة ويكتب لك حسنة'};}
+    }
+  }
+  MODES.forEach(m=>{const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.mode=m.id;b.textContent=m.label;
+    b.onclick=()=>{state.mode=m.id;save();render();if(m.id==='person'&&!personLabel())el('personName').focus();};el('modes').appendChild(b);});
+  el('personName').value=state.personName||'';
+  el('personName').addEventListener('input',e=>{state.personName=e.target.value.slice(0,30);save();render();});
+  el('gM').onclick=()=>{state.personG='m';save();render();};
+  el('gF').onclick=()=>{state.personG='f';save();render();};
+  el('personShare').onclick=()=>{const n=personLabel(); if(!n){el('personName').focus();return;}
+    share('استغفر لـ'+n, 'ادعي معايا لـ'+n+' بالمغفرة', baseUrl()+'?for='+encodeURIComponent(n)+'&g='+state.personG);};
+  function renderMode(){
+    const c=modeCopy();
+    el('intro').textContent=c.intro;
+    const ph=el('phrase'); ph.textContent=c.phrase; ph.classList.toggle('long',!!c.long);
+    document.querySelectorAll('#modes .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===state.mode)));
+    el('person').hidden=state.mode!=='person';
+    el('gM').setAttribute('aria-pressed',String(state.personG!=='f'));
+    el('gF').setAttribute('aria-pressed',String(state.personG==='f'));
+    el('personShare').hidden=!online;
+    el('chips').hidden=state.mode!=='self';
+    const mn=el('modeNote'); mn.hidden=!c.src; mn.textContent=c.src||'';
+    document.querySelectorAll('#chips .chip').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===state.idx)));
+    const pressLabel={self:'أستغفر الله',parents:'اغفر لهما',believers:'اغفر لهم',person:state.personG==='f'?'اغفر لها':'اغفر له'}[state.mode]||'أستغفر الله';
+    el('press').textContent=pressLabel;
+  }
+
+  PHRASES.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=p.label;
+    b.onclick=()=>{state.idx=i;save();render();};el('chips').appendChild(b);});
+
+  /* ---------- moon of days (streak) ---------- */
+  const MOON_FULL=14;
+  function shownStreak(){return (state.lastDay===todayKey()||state.lastDay===yesterdayKey())?state.streak:0;}
+  function moonPath(p,cx,cy,r){
+    if(p>=0.999) return `M${cx} ${cy-r} A${r} ${r} 0 1 1 ${cx} ${cy+r} A${r} ${r} 0 1 1 ${cx} ${cy-r} Z`;
+    const rx=(r*Math.abs(1-2*p)).toFixed(2), sw=p<0.5?0:1;
+    return `M${cx} ${cy-r} A${r} ${r} 0 0 1 ${cx} ${cy+r} A${rx} ${r} 0 0 ${sw} ${cx} ${cy-r} Z`;
+  }
+  function renderMoon(){
+    const ds=shownStreak(), doneToday=state.lastDay===todayKey();
+    const p=ds>=MOON_FULL?1:Math.max(0.06,ds/MOON_FULL);
+    el('moonLit').setAttribute('d',moonPath(p,20,20,17));
+    el('moonLit').style.opacity=ds?1:.35;
+    const t=el('moonTitle'), x=el('moonText');
+    if(ds>=MOON_FULL){t.textContent='قمرك بدر';x.textContent=fmt(ds)+' يوم متتالي، حافظ عليه';}
+    else if(!ds){t.textContent='قمر الأيام';x.textContent='استغفر كل يوم، والقمر يكبر لحد ما يبقى بدر';}
+    else if(!doneToday){t.textContent='قمرك مستنيك';x.textContent='استغفر النهارده علشان ما يرجعش هلال';}
+    else{t.textContent=fmt(ds)+(ds===1?' يوم':' أيام متتالية');x.textContent='باقي '+fmt(MOON_FULL-ds)+' على البدر';}
+  }
+  function touchStreak(){
+    const t=todayKey(); if(state.lastDay===t) return false;
+    state.streak=(state.lastDay===yesterdayKey())?(state.streak||0)+1:1;
+    state.lastDay=t; return true;
+  }
+
+  /* ---------- sharing ---------- */
+  function baseUrl(){return location.origin+location.pathname;}
+  let toastT=null;
+  function toast(m){const t=el('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+  async function share(title,text,url){
+    if(!/^https?:$/.test(location.protocol)){toast('الرابط هيشتغل بعد ما ترفع الموقع على النت');return;}
+    const mobile=window.matchMedia('(pointer: coarse)').matches;
+    try{ if(mobile&&navigator.share){await navigator.share({title,text,url});return;} }catch(e){ if(e&&e.name==='AbortError') return; }
+    try{await navigator.clipboard.writeText(text+'\n'+url);toast('اتنسخ الرابط');}catch(e){prompt('انسخ الرابط:',url);}
+  }
+
+  /* ---------- shared counter + challenges (Supabase) ---------- */
+  const H=()=>SUPABASE_ANON_KEY.startsWith('sb_')?{apikey:SUPABASE_ANON_KEY,'Content-Type':'application/json'}:{apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+  async function rpc(fn,body,keep){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:H(),body:JSON.stringify(body||{}),keepalive:!!keep});
+    if(!r.ok) throw new Error('rpc '+r.status);
+    const t=await r.text(); return t?JSON.parse(t):null;
+  }
+  async function getChallenge(code){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/challenges?code=eq.'+encodeURIComponent(code)+'&select=code,name,goal,count',{headers:H()});
+    if(!r.ok) throw new Error('get '+r.status);
+    const a=await r.json(); return a[0]||null;
+  }
+  let pending=0, inflightN=0, flushT=null, serverToday=null, chData=null, chMissing=false;
+  function scheduleFlush(){ if(!online) return; clearTimeout(flushT); flushT=setTimeout(flush,2500); }
+  async function flush(keep){
+    if(!online||!pending||inflightN) return;
+    const n=Math.min(pending,200); pending-=n; inflightN=n;
+    try{ await rpc('add_istighfar',{p_n:n,p_code:state.challenge||null},keep);
+      if(serverToday!=null) serverToday+=n; if(chData) chData.count=Number(chData.count)+n; }
+    catch(e){ pending+=n; }
+    finally{ inflightN=0; renderShared(); if(pending) scheduleFlush(); }
+  }
+  async function poll(){
+    if(!online||document.hidden) return;
+    try{ serverToday=Number(await rpc('today_count')); }catch(e){}
+    if(state.challenge){ try{ chData=await getChallenge(state.challenge); chMissing=!chData; }catch(e){} }
+    renderShared();
+  }
+  function renderShared(){
+    if(!online) return;
+    const live=el('live');
+    if(serverToday!=null){live.hidden=false; el('liveCount').textContent=fmt(serverToday+pending+inflightN);}
+    el('challenge').hidden=false;
+    const active=!!(state.challenge&&chData);
+    el('chNone').hidden=active; el('chActive').hidden=!active;
+    if(active){
+      const c=Number(chData.count)+pending+inflightN, g=Number(chData.goal);
+      el('chTitle').textContent=chData.name;
+      el('chBar').style.width=Math.min(100,c/g*100)+'%';
+      el('chText').textContent= c>=g ? 'اكتمل التحدي ('+fmt(c)+' استغفارة)، تقبّل الله منكم' : fmt(c)+' من '+fmt(g)+'، باقي '+fmt(g-c);
+    }
+    if(state.challenge&&chMissing){state.challenge=null;chMissing=false;save();toast('التحدي ده مش موجود');}
+  }
+  el('chStart').onclick=()=>{el('chForm').hidden=false;el('chStart').hidden=true;el('chName').focus();};
+  el('chCreate').onclick=async()=>{
+    const name=el('chName').value.trim(), goal=Number(el('chGoal').value), err=el('chErr');
+    if(!name){err.textContent='اكتب اسم للتحدي';el('chName').focus();return;}
+    err.textContent=''; el('chCreate').disabled=true;
+    try{ await flush(); const code=await rpc('create_challenge',{p_name:name,p_goal:goal});
+      state.challenge=code; save(); chData={code,name,goal,count:0}; renderShared();
+      share('تحدي استغفار: '+name,'انضم لتحدي الاستغفار "'+name+'"، هدفنا '+fmt(goal)+' استغفارة',baseUrl()+'?c='+code);
+    }catch(e){ err.textContent='ما قدرناش نعمل التحدي، جرّب تاني'; }
+    finally{ el('chCreate').disabled=false; }
+  };
+  el('chShare').onclick=()=>{ if(!chData) return; share('تحدي استغفار: '+chData.name,'انضم لتحدي الاستغفار "'+chData.name+'"',baseUrl()+'?c='+chData.code); };
+  el('chLeave').onclick=async()=>{ if(!confirm('تخرج من التحدي؟')) return; await flush(); state.challenge=null; chData=null; save();
+    el('chForm').hidden=true; el('chStart').hidden=false; renderShared(); };
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden) flush(true); else poll(); });
+  if(online){ poll(); setInterval(poll,15000); }
+
+  el('press').addEventListener('click',()=>{
+    if(state.date!==todayKey()){state.date=todayKey();state.today=0;shownStars=-1;}
+    state.today++; state.total++;
+    const newDay=touchStreak(); save();
+    if(newDay&&!reduce){const m=el('moon');m.classList.remove('pop');void m.getBBox();m.classList.add('pop');}
+    if(online){pending++; scheduleFlush(); renderShared();}
+    const full=state.today%N===0;
+    if(full){holding=true; render(); setTimeout(gather,550);} else render();
+    const L=LETTERS.find(l=>l.at===state.today);
+    if(L) setTimeout(()=>openLetter(L), full?1500:350);
+    try{navigator.vibrate&&navigator.vibrate(full?[20,60,40]:12);}catch(e){}
+  });
+  el('reset').addEventListener('click',()=>{
+    if(confirm('تصفير عدّاد اليوم؟ المجموع الكلي هيفضل زي ما هو.')){state.today=0;pendingStars=0;save();render();}
+  });
+
+  render();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>svg.classList.remove('noanim')));
+})();
+</script>
+</body>
+</html>
