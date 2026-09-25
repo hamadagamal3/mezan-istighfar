@@ -177,7 +177,10 @@ input.field{flex:1 1 150px;max-width:220px}
 .support:focus-visible{outline:3px solid var(--text);outline-offset:3px}
 main{padding-bottom:90px}
 
-.scale-wrap{position:relative;width:100%;max-width:420px;display:flex;justify-content:center}
+.scale-wrap{position:relative;width:100%;max-width:420px;display:flex;justify-content:center;border-radius:22px;overflow:hidden;padding:10px 6px 4px;margin-top:6px;isolation:isolate}
+.scene{position:absolute;inset:0;z-index:-1;transition:opacity .8s ease}
+.scene svg{width:100%;height:100%;display:block}
+.scene.swap{opacity:0}
 svg.scale{transition:opacity .4s ease, transform .4s ease}
 svg.scale.fadeout{opacity:0;transform:scale(.94)}
 svg.scale.arrive{animation:arrive .8s ease}
@@ -321,6 +324,34 @@ svg.scale.arrive{animation:arrive .8s ease}
   background:var(--surface);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .themebtn svg{width:20px;height:20px;fill:none;stroke:var(--brass);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .themebtn:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+
+.journey{width:100%;max-width:420px;margin:8px 0 0;text-align:center}
+.journey .l1{display:flex;justify-content:center;align-items:center;gap:6px 10px;flex-wrap:wrap;font-size:14px}
+.journey .l1 b{font-weight:700}
+.journey .l1 span{color:var(--muted)}
+.journey .bar{max-width:260px;margin:6px auto;height:6px}
+.journey .l2{font-size:12px;color:var(--muted);display:flex;justify-content:center;align-items:center;gap:4px 10px;flex-wrap:wrap}
+.jmap{position:fixed;inset:0;z-index:30;background:var(--veil);display:flex;align-items:center;justify-content:center;padding:16px}
+.jmap[hidden]{display:none}
+.jmap .vault-card{max-width:520px}
+.jbody{overflow-y:auto;padding:12px 14px 18px;display:flex;flex-direction:column;gap:14px}
+.world{flex:none;border-radius:16px;overflow:hidden;background:color-mix(in srgb,var(--surface) 55%,transparent);border:1px solid transparent}
+.world.curw{border-color:var(--brass)}
+.world .ban{position:relative;height:84px}
+.world .ban svg{width:100%;height:100%;display:block}
+.world .ban .wn{position:absolute;bottom:8px;right:12px;background:rgba(0,0,0,.45);color:#fff;border-radius:10px;padding:2px 10px;font-family:'Amiri',serif;font-size:17px;font-weight:700}
+.world.locked .ban svg{filter:grayscale(1) brightness(.6);opacity:.5}
+.nodes{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px}
+.node{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;
+  background:var(--surface);color:var(--muted);position:relative;max-width:48px;margin:0 auto;width:100%}
+.node.done{background:var(--brass);color:var(--btn-text)}
+.node.cur{background:transparent;border:2px solid var(--brass);color:var(--text)}
+.node.cur::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--brass);opacity:.4;animation:nodeping 1.8s ease-out infinite}
+@keyframes nodeping{from{transform:scale(.9);opacity:.6}to{transform:scale(1.25);opacity:0}}
+.book{font-size:13px;color:var(--muted)}
+.worldv .scenebig{width:100%;height:150px;border-radius:14px;overflow:hidden;margin:6px 0 12px}
+.worldv .scenebig svg{width:100%;height:100%;display:block}
+@media (prefers-reduced-motion: reduce){.node.cur::after{animation:none}}
 </style>
 </head>
 <body>
@@ -368,6 +399,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   <div class="sky" id="sky" aria-live="polite"></div>
 
   <div class="scale-wrap">
+    <div class="scene" id="scene" aria-hidden="true"></div>
     <svg class="scale noanim" id="scale" viewBox="0 0 360 272" aria-hidden="true">
       <g id="static"></g>
       <g id="panL"></g>
@@ -376,7 +408,11 @@ svg.scale.arrive{animation:arrive .8s ease}
     </svg>
     <div class="announce" id="announce" aria-live="polite"><span>ميزان جديد، صحيفة جديدة</span><b id="announceName"></b></div>
   </div>
-  <p class="stage"><span id="stageText"></span><button class="linkbtn" type="button" id="vaultBtn">خزانة الموازين</button></p>
+  <div class="journey">
+    <div class="l1"><b id="jStage"></b><span id="jWorld"></span><button class="linkbtn" type="button" id="jMapBtn">خريطة الرحلة</button></div>
+    <div class="bar" aria-hidden="true"><span id="jBar"></span></div>
+    <div class="l2"><span id="stageText"></span><button class="linkbtn" type="button" id="vaultBtn">خزانة الموازين</button></div>
+  </div>
 
   <p class="intent" id="intent"></p>
   <div class="intent-form" id="intentForm" hidden>
@@ -504,6 +540,21 @@ svg.scale.arrive{animation:arrive .8s ease}
       <button class="ghost" type="button" id="endInstall">ثبّت الموقع علشان ترجعله بكرة بلمسة</button>
       <p id="endInsHint" hidden></p>
     </div>
+  </div>
+</div>
+<div class="jmap" id="jmap" hidden role="dialog" aria-modal="true" aria-labelledby="jmapTitle">
+  <div class="vault-card">
+    <div class="vault-head"><b id="jmapTitle">خريطة الرحلة</b><span id="jmapSub"></span><button class="close-x" type="button" id="jmapClose" aria-label="إغلاق">×</button></div>
+    <div class="jbody" id="jbody"></div>
+  </div>
+</div>
+<div class="reveal worldv" id="worldv" hidden role="dialog" aria-modal="true" aria-labelledby="worldTitle">
+  <div class="card end">
+    <p class="kicker" id="worldKicker"></p>
+    <p class="big" id="worldTitle"></p>
+    <div class="scenebig" id="worldScene"></div>
+    <p class="sub" id="worldSub"></p>
+    <div class="row"><button class="solid" type="button" id="worldGo">كمّل الرحلة</button></div>
   </div>
 </div>
 <div class="vault" id="vault" hidden role="dialog" aria-modal="true" aria-labelledby="vaultTitle">
@@ -787,6 +838,98 @@ svg.scale.arrive{animation:arrive .8s ease}
 
   const svg=el('scale'), panL=el('panL'), panR=el('panR'), beam=el('beam'), staticG=el('static');
   let bad, good, shownTheme=0, curT=THEMES[0];
+  /* ---------- journey: 100 stages in 10 worlds ---------- */
+  const STAGES=100, SPS=Array.from({length:STAGES},(_,i)=>1+Math.floor(i/7));
+  const CUM=[0]; SPS.forEach((n,i)=>CUM.push(CUM[i]+n));
+  const WORLDS=[
+    {n:'الصحراء',a:'#F3D9A4',b:'#EBC07E',dark:false},{n:'الواحة',a:'#BFE3E6',b:'#F2E3B3',dark:false},
+    {n:'البحر',a:'#A9D4EE',b:'#E4F2F8',dark:false},{n:'الجبال',a:'#C9D6E3',b:'#EEF1F4',dark:false},
+    {n:'الفجر',a:'#8FA4D6',b:'#F6B89A',dark:false},{n:'الضحى',a:'#8ECDF5',b:'#E3F4FF',dark:false},
+    {n:'الغروب',a:'#6B4C8A',b:'#F28C5A',dark:true},{n:'الليل',a:'#141B35',b:'#2E3B6B',dark:true},
+    {n:'السَّحَر',a:'#15234A',b:'#4A5E8F',dark:true},{n:'السماء',a:'#070B1F',b:'#1C2250',dark:true}];
+  const ORD=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'];
+  function stageOf(level){ let i=0; while(i<STAGES&&CUM[i+1]<=level) i++; return i; }  // 0..100 (100 = finished)
+  function starsSVG(R,n,y1,y2,op){let o='';for(let i=0;i<n;i++){const x=(R()*360).toFixed(1),y=(y1+R()*(y2-y1)).toFixed(1),r=(0.5+R()*1.3).toFixed(2);
+    o+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#FFF7DA" opacity="${(op*(0.5+R()*0.5)).toFixed(2)}"/>`;}return o;}
+  function palm(x,y,s,c){return `<g transform="translate(${x} ${y}) scale(${s})" fill="${c}"><path d="M-2 0 Q2 -30 -1 -60 L3 -60 Q6 -30 2 0Z"/><path d="M1 -60 Q-20 -70 -34 -56 Q-18 -64 1 -58Z M1 -60 Q22 -72 36 -58 Q18 -65 1 -58Z M1 -60 Q-10 -80 -26 -80 Q-10 -74 1 -58Z M1 -60 Q12 -82 28 -80 Q12 -74 1 -58Z"/></g>`;}
+  function cloud(x,y,s,c,op){return `<g transform="translate(${x} ${y}) scale(${s})" fill="${c}" opacity="${op}"><ellipse cx="0" cy="0" rx="26" ry="11"/><ellipse cx="-14" cy="-6" rx="13" ry="10"/><ellipse cx="10" cy="-9" rx="15" ry="12"/></g>`;}
+  function sceneSVG(w,k,pfx){
+    const W=WORLDS[w], R=rng(1000+w*37+k*101), id=pfx+'s';
+    let g=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${W.a}"/><stop offset="1" stop-color="${W.b}"/></linearGradient>
+      <radialGradient id="${id}h" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#FFFFFF" stop-opacity="${W.dark?.16:.25}"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient></defs>
+      <rect width="360" height="272" fill="url(#${id})"/>`;
+    switch(w){
+      case 0: g+=`<circle cx="${300-k*10}" cy="${52+k}" r="22" fill="#FFF1C1" opacity=".95"/>`+(k>=4?`<path d="M60 70 q6 -6 12 0 q6 -6 12 0 M100 58 q5 -5 10 0 q5 -5 10 0" stroke="#8C6A3A" stroke-width="1.6" fill="none"/>`:'')+
+        `<path d="M0 214 Q90 186 180 212 T360 204 V272 H0Z" fill="#E4B06A"/><path d="M0 238 Q120 212 240 236 T360 228 V272 H0Z" fill="#D39A55"/>`; break;
+      case 1: g+=`<circle cx="300" cy="48" r="18" fill="#FFF6D0"/><path d="M0 222 Q100 200 200 220 T360 214 V272 H0Z" fill="#E8C98A"/>
+        <ellipse cx="96" cy="240" rx="${46+k*2}" ry="9" fill="#5FB3C4"/>`+palm(48,238,1,'#5E7A3E')+palm(140,236,.85,'#6E8B4E')+(k>=3?palm(300,232,.9,'#5E7A3E'):'')+(k>=6?palm(330,236,.7,'#6E8B4E'):''); break;
+      case 2: g+=`<circle cx="${280-k*6}" cy="58" r="20" fill="#FFF3C9"/>`+cloud(90,60,1,'#fff',.8)+
+        `<rect y="196" width="360" height="76" fill="#3A8FB7"/><path d="M0 206 q15 -5 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0" stroke="#7FC3E0" stroke-width="2" fill="none"/>
+        <path d="M0 226 q20 -5 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#6FB5D6" stroke-width="2" fill="none"/>`+
+        (k>=3?`<g transform="translate(${60+k*8} 196)"><path d="M-14 0 L14 0 L10 6 L-10 6Z" fill="#6B4A2E"/><path d="M0 -22 L0 0 M0 -22 L12 -4 L0 -4Z" stroke="#6B4A2E" fill="#F4EBDD"/></g>`:'')+(k>=6?`<path d="M270 200 Q300 180 330 200Z" fill="#8FB36A"/>`+palm(300,194,.45,'#5E7A3E'):''); break;
+      case 3: g+=cloud(80,50,.9,'#fff',.85)+(k>=4?cloud(260,40,.7,'#fff',.8):'')+
+        `<path d="M0 220 L70 120 L130 200 L200 100 L270 190 L320 130 L360 180 V272 H0Z" fill="#9AA8B6"/>
+        <path d="M200 100 L186 120 L196 116 L204 124 L214 118Z M70 120 L58 138 L68 134 L76 140 L84 136Z" fill="#fff"/>
+        <path d="M0 240 L90 176 L160 232 L240 170 L310 226 L360 200 V272 H0Z" fill="#6F7E8D"/>`; break;
+      case 4: g+=starsSVG(R,Math.max(0,10-k),10,110,.7)+`<circle cx="180" cy="${214-k*3}" r="28" fill="#FFD9A0"/><path d="M0 214 Q120 190 240 212 T360 206 V272 H0Z" fill="#4A5A7A"/><path d="M0 240 Q140 222 280 238 T360 236 V272 H0Z" fill="#3A4863"/>`; break;
+      case 5: g+=`<circle cx="${90+k*6}" cy="44" r="20" fill="#FFF5CC"/>`+cloud(250,52,1,'#fff',.9)+(k>=3?cloud(120,80,.7,'#fff',.8):'')+(k>=6?cloud(320,90,.6,'#fff',.8):'')+
+        `<path d="M0 218 Q90 190 180 214 T360 206 V272 H0Z" fill="#8BBF6A"/><path d="M0 240 Q120 218 240 238 T360 232 V272 H0Z" fill="#6FA351"/>`; break;
+      case 6: g+=`<circle cx="180" cy="${196+k}" r="34" fill="#FFB36B" opacity=".95"/>
+        <path d="M0 214 H40 V196 Q52 180 64 196 V214 H90 V170 h4 v-8 h4 v8 h4 V214 H150 V200 Q170 176 190 200 V214 H230 V160 h4 v-8 h4 v8 h4 V214 H280 V198 Q292 184 304 198 V214 H360 V272 H0Z" fill="#3A2A4A"/>`; break;
+      case 7: g+=starsSVG(R,20+k*3,6,170,.9)+`<path d="M292 34 A18 18 0 1 0 292 70 A14 14 0 1 1 292 34Z" fill="#FFF3C4"/>
+        <path d="M0 222 Q100 198 200 220 T360 212 V272 H0Z" fill="#1E2A45"/><path d="M0 244 Q140 226 280 242 T360 238 V272 H0Z" fill="#162038"/>`; break;
+      case 8: g+=starsSVG(R,40+k*3,6,170,.9)+`<ellipse cx="180" cy="262" rx="220" ry="60" fill="#E9A86A" opacity=".28"/>
+        <path d="M0 226 H110 V204 Q140 172 170 204 V226 H190 V150 h5 v-10 h5 v10 h5 V226 H360 V272 H0Z" fill="#101a33"/>
+        <rect x="132" y="210" width="5" height="9" rx="2" fill="#FFD86B"/><rect x="146" y="210" width="5" height="9" rx="2" fill="#FFD86B"/><circle cx="197" cy="${k>=5?170:176}" r="2.5" fill="#FFD86B"/>`; break;
+      default: g+=`<ellipse cx="180" cy="110" rx="260" ry="46" transform="rotate(-18 180 110)" fill="#9FA8FF" opacity=".16"/>`+starsSVG(R,70+k*4,4,250,1)+
+        [0,1,2,3].map(i=>{const x=40+R()*280,y=20+R()*120;return `<path d="${starPath(4,5,1.3,x,y)}" fill="#FFF7DA"/>`;}).join('')+
+        cloud(60,262,1.6,'#2A3470',.9)+cloud(200,270,1.9,'#2A3470',.9)+cloud(330,262,1.5,'#2A3470',.9);
+    }
+    return `<svg viewBox="0 0 360 272" preserveAspectRatio="xMidYMid slice">${g}<rect width="360" height="272" fill="url(#${id}h)"/></svg>`;
+  }
+  let sceneKey='';
+  function updateScene(){
+    const st=Math.min(STAGES-1,stageOf(state.level||0)), w=Math.floor(st/10), k=st%10, key=w+'-'+k;
+    if(key===sceneKey) return; const first=!sceneKey; sceneKey=key;
+    const sc=el('scene');
+    if(first||reduce){ sc.innerHTML=sceneSVG(w,k,'main'+key); return; }
+    sc.classList.add('swap'); setTimeout(()=>{ sc.innerHTML=sceneSVG(w,k,'main'+key); sc.classList.remove('swap'); },450);
+  }
+  function renderStage(){
+    const lvl=state.level||0, st=stageOf(lvl);
+    if(st>=STAGES){ el('jStage').textContent='ختمت الرحلة'; el('jWorld').textContent='· كتابك فيه '+fmt(STAGES)+' صحيفة'; el('jBar').style.width='100%'; return; }
+    const w=Math.floor(st/10), partial=(stonesFor(state.today)[0]||0)/N;
+    const prog=(lvl-CUM[st]+(holding?0:partial))/SPS[st];
+    el('jStage').textContent='المرحلة '+fmt(st+1)+' من '+fmt(STAGES);
+    el('jWorld').textContent='· عالم '+WORLDS[w].n;
+    el('jBar').style.width=Math.min(100,Math.max(2,prog*100))+'%';
+  }
+  function openMap(){
+    const lvl=state.level||0, st=stageOf(lvl), cw=Math.min(9,Math.floor(st/10)), body=el('jbody');
+    el('jmapSub').textContent=(st>=STAGES?'ختمت الرحلة':'المرحلة '+fmt(st+1)+' من '+fmt(STAGES))+' · كتابك: '+fmt(Math.min(st,STAGES))+' صحيفة';
+    body.innerHTML=WORLDS.map((W,w)=>{
+      const open=w<=Math.floor(st/10)||st>=STAGES;
+      const nodes=Array.from({length:10},(_,j)=>{const i=w*10+j, cls=i<st?'done':i===st?'cur':'';
+        return `<div class="node ${cls}" title="المرحلة ${fmt(i+1)}">${i<st?'✓':fmt(i+1)}</div>`;}).join('');
+      return `<section class="world${open?'':' locked'}${w===cw&&st<STAGES?' curw':''}"><div class="ban">${sceneSVG(w,5,'map'+w)}<span class="wn">${open?'عالم '+W.n:'العالم '+ORD[w]+' · ؟'}</span></div><div class="nodes">${nodes}</div></section>`;
+    }).join('');
+    el('jmap').hidden=false; el('jmapClose').focus();
+    const c=body.querySelector('.curw'); if(c) c.scrollIntoView({block:'start'});
+  }
+  function closeMap(){el('jmap').hidden=true; el('jMapBtn').focus();}
+  el('jMapBtn').addEventListener('click',openMap);
+  el('jmapClose').addEventListener('click',closeMap);
+  el('jmap').addEventListener('click',e=>{if(e.target.id==='jmap')closeMap();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el('jmap').hidden)closeMap();});
+  function openWorld(w,finished){
+    el('worldKicker').textContent= finished?'ما شاء الله':'دخلت العالم '+ORD[w];
+    el('worldTitle').textContent= finished?'ختمت الرحلة':'عالم '+WORLDS[w].n;
+    el('worldScene').innerHTML=sceneSVG(Math.min(9,w),finished?9:0,'wv'+w);
+    el('worldSub').textContent= finished?'كتابك فيه '+fmt(STAGES)+' صحيفة. تقبّل الله منك، وكمّل الاستغفار فبابه مفتوح دايمًا.':'خلّصت '+fmt(w*10)+' مرحلة، وقدامك ١٠ مراحل جديدة في عالم '+WORLDS[w].n+'.';
+    el('worldv').hidden=false; el('worldGo').focus();
+  }
+  el('worldGo').onclick=()=>{el('worldv').hidden=true; el('press').focus();};
+
   const JAMAA={name:'ميزان الجماعة',m:'#D4A937',d:'#8F6B12',post:'minaret',base:'arch',beam:'ornate',top:'crescent',pan:'deep',str:'chain',
     bs:'rock',bc:BADC.stone[0],be:BADC.stone[1],gs:'star8',gc:GOODC.star[0],ge:GOODC.star[1]};
   function applyTheme(){
@@ -798,6 +941,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     const sp=document.createElement('span'); sp.textContent='الميزان '+fmt(shownTheme+1)+(shownTheme<TN?' من '+fmt(TN):'')+' · ';
     const b=document.createElement('b'); b.textContent=t.name; sp.appendChild(b); el('stageText').appendChild(sp);
     el('vaultBtn').textContent='خزانة الموازين ('+fmt(Math.min(TN,(state.level||0)+1))+'/'+fmt(TN)+')';
+    updateScene();
   }
   applyTheme();
 
@@ -862,7 +1006,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     if(state.today>=W){note.textContent='خلّصت وردك ('+fmt(W)+') النهارده، تقبّل الله منك';note.classList.add('done');}
     else{note.textContent=modeCopy().note+'، باقي '+fmt(W-state.today)+' على وردك ('+fmt(W)+')';note.classList.remove('done');}
     el('total').textContent='مجموع استغفارك على هذا الجهاز: '+fmt(state.total);
-    renderMode(); renderSky(); renderLetter(); renderMoon(); renderDed(); renderIntent(); renderMeaning(); if(!el('daymap').hidden) renderMap();
+    renderMode(); renderSky(); renderLetter(); renderMoon(); renderDed(); renderStage(); renderIntent(); renderMeaning(); if(!el('daymap').hidden) renderMap();
   }
 
   /* ---------- full scale → star rises ---------- */
@@ -882,9 +1026,15 @@ svg.scale.arrive{animation:arrive .8s ease}
     ],{duration:1100,easing:'cubic-bezier(.3,.1,.2,1)'});
     a.onfinish=done;
   }
+  let stageDone=null;
   function announce(){
-    const a=el('announce'); el('announceName').textContent=curT.name;
+    const a=el('announce'), sp=a.querySelector('span');
+    if(stageDone!=null){ sp.textContent='خلّصت المرحلة '+fmt(stageDone+1)+' · صحيفة جديدة في كتابك'; }
+    else sp.textContent='ميزان جديد، صحيفة جديدة';
+    el('announceName').textContent=curT.name;
     a.classList.remove('show'); void a.offsetWidth; a.classList.add('show');
+    const sd=stageDone; stageDone=null;
+    if(sd!=null){ const ns=sd+1; if(ns>=STAGES) setTimeout(()=>openWorld(9,true),1400); else if(ns%10===0) setTimeout(()=>openWorld(ns/10,false),1400); }
   }
   function swapTheme(){
     if(reduce){applyTheme();holding=false;render();cur=target;place(cur);announce();return;}
@@ -1389,7 +1539,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     if(newDay&&!reduce){const m=el('moon');m.classList.remove('pop');void m.getBBox();m.classList.add('pop');}
     if(online){pending++; scheduleFlush(); renderShared();}
     const full=state.today%N===0;
-    if(full){state.level=(state.level||0)+1; save(); holding=true; render(); setTimeout(gather,550);} else render();
+    if(full){ const before=stageOf(state.level||0); state.level=(state.level||0)+1; if(stageOf(state.level)>before) stageDone=before; save(); holding=true; render(); setTimeout(gather,550);} else render();
     const L=LETTERS.find(l=>l.at===state.today);
     if(L) setTimeout(()=>openLetter(L), full?1500:350);
     if(state.today>=(state.wird||33)){ wirdDone(); if(state.endSeenDay!==todayKey()) setTimeout(openEnd, L?(full?1600:450):(full?1700:400)); }
