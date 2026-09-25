@@ -300,10 +300,30 @@ svg.scale.arrive{animation:arrive .8s ease}
 .end .moonline{font-size:14px;color:var(--muted);margin:0 0 16px}
 .end .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 @media (prefers-reduced-motion: reduce){.press-wrap.presence .ring{animation:none}}
+
+.ibar{width:100%;max-width:440px;display:flex;align-items:center;gap:10px;padding:8px 10px;margin:0 0 10px;border-radius:14px;
+  background:color-mix(in srgb,var(--surface) 70%,transparent);border:1px solid color-mix(in srgb,var(--brass) 50%,transparent);text-align:start}
+.ibar[hidden]{display:none}
+.ibar img{width:38px;height:38px;border-radius:9px;flex:none}
+.ibar .tx{flex:1;font-size:13px;line-height:1.5}
+.ibar .tx b{display:block;font-size:14px;font-weight:600}
+.ibar .tx span{color:var(--muted)}
+.ibar .solid{padding:7px 14px;flex:none}
+.ibar .x{font:inherit;font-size:20px;line-height:1;width:30px;height:30px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;flex:none}
+.ibar .x:focus-visible{outline:3px solid var(--text)}
+.end .ins{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--surface)}
+.end .ins[hidden]{display:none}
+.end .ins p{font-size:13px;color:var(--muted);margin:8px 0 0;line-height:1.7}
 </style>
 </head>
 <body>
 <main>
+  <div class="ibar" id="ibar" hidden role="region" aria-label="تثبيت الموقع">
+    <img src="apple-touch-icon.png" alt="">
+    <div class="tx"><b>ثبّت ميزان الاستغفار على شاشتك</b><span id="ibarHint">وارجعله كل يوم بلمسة</span></div>
+    <button class="solid" type="button" id="ibarBtn">ثبّت</button>
+    <button class="x" type="button" id="ibarX" aria-label="إخفاء">×</button>
+  </div>
   <h1>ميزان الاستغفار</h1>
   <p class="intro" id="intro"></p>
 
@@ -473,6 +493,10 @@ svg.scale.arrive{animation:arrive .8s ease}
     <p class="sub" id="endSub"></p>
     <p class="moonline" id="endMoon"></p>
     <div class="row"><button class="solid" type="button" id="endMore">كمّل الاستغفار</button><button class="ghost" type="button" id="endBye">نستناك بكرة</button></div>
+    <div class="ins" id="endIns" hidden>
+      <button class="ghost" type="button" id="endInstall">ثبّت الموقع علشان ترجعله بكرة بلمسة</button>
+      <p id="endInsHint" hidden></p>
+    </div>
   </div>
 </div>
 <div class="vault" id="vault" hidden role="dialog" aria-modal="true" aria-labelledby="vaultTitle">
@@ -569,7 +593,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el=id=>document.getElementById(id);
 
-  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:'',rid:'',refBy:null,refSent:false,ded:null,dedCounted:[],wird:33,wirdStreak:0,lastWirdDay:'',wirdOfferDay:'',history:{},graceWeek:'',presence:false,intent:{date:'',text:''},endSeenDay:''};
+  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:'',rid:'',refBy:null,refSent:false,ded:null,dedCounted:[],wird:33,wirdStreak:0,lastWirdDay:'',wirdOfferDay:'',history:{},graceWeek:'',presence:false,intent:{date:'',text:''},endSeenDay:'',firstDay:'',ibarHideUntil:0};
   try{const s=JSON.parse(localStorage.getItem('istighfar')||'null'); if(s) state=Object.assign(state,s);}catch(e){}
   try{
     const qs=new URLSearchParams(location.search);
@@ -1092,14 +1116,28 @@ svg.scale.arrive{animation:arrive .8s ease}
   let installEvt=null;
   const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
   const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(!state.firstDay){state.firstDay=todayKey(); save();}
+  const howTo=()=>iOS?'من Safari: دوس زرار المشاركة ⬆️ وبعدين "إضافة إلى الشاشة الرئيسية"':'من قائمة المتصفح ⋮ اختار "إضافة إلى الشاشة الرئيسية" أو "تثبيت التطبيق"';
+  async function doInstall(hintEl){
+    if(installEvt){ installEvt.prompt(); try{const c=await installEvt.userChoice; if(c&&c.outcome==='accepted') toast('تم، هتلاقيه على شاشتك');}catch(e){} installEvt=null; renderInstall(); return; }
+    if(hintEl){hintEl.hidden=false; hintEl.textContent=howTo();} else toast(howTo());
+  }
+  el('ibarBtn').onclick=()=>{ if(installEvt) doInstall(); else { el('ibarHint').textContent=howTo(); el('ibarBtn').hidden=true; } };
+  el('ibarX').onclick=()=>{ state.ibarHideUntil=Date.now()+7*86400000; save(); el('ibar').hidden=true; };
+  el('endInstall').onclick=()=>doInstall(el('endInsHint'));
   function renderInstall(){
+    const returning=state.firstDay&&state.firstDay!==todayKey();
+    el('ibar').hidden=standalone||!returning||Date.now()<(state.ibarHideUntil||0);
+    if(!el('ibar').hidden){ el('ibarBtn').textContent=installEvt?'ثبّت':'إزاي؟'; }
+    el('endIns').hidden=standalone;
     if(standalone){el('installItem').hidden=true;return;}
     el('installBtn').hidden=!installEvt;
     el('installHint').textContent= installEvt ? 'هيظهر كأيقونة على الشاشة وتفتحه بلمسة.' :
       iOS ? 'من Safari: دوس زرار المشاركة ⬆️ وبعدين "إضافة إلى الشاشة الرئيسية".' : 'من قائمة المتصفح ⋮ اختار "إضافة إلى الشاشة الرئيسية" أو "تثبيت التطبيق".';
   }
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(); installEvt=e; renderInstall();});
-  el('installBtn').onclick=async()=>{ if(!installEvt) return; installEvt.prompt(); try{await installEvt.userChoice;}catch(e){} installEvt=null; renderInstall(); };
+  el('installBtn').onclick=()=>doInstall(el('installHint'));
+  window.addEventListener('appinstalled',()=>{installEvt=null; el('ibar').hidden=true; el('endIns').hidden=true; el('installItem').hidden=true;});
   renderInstall();
 
   /* ---------- sharing ---------- */
