@@ -189,6 +189,33 @@ svg.scale.arrive{animation:arrive .8s ease}
 .tile.locked svg{filter:grayscale(1);opacity:.28}
 .tile.locked small{color:var(--muted)}
 @media (prefers-reduced-motion: reduce){svg.scale.arrive,.announce.show{animation:none}.announce.show{opacity:1}}
+
+.goal{width:100%;max-width:340px;margin:10px 0 0;text-align:center}
+.goal[hidden]{display:none}
+.goal .row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--muted);gap:8px}
+.goal .row b{color:var(--text);font-size:14px;font-weight:600}
+.goal .bar{max-width:none;height:8px;margin:6px 0 0}
+.goal.done .row b{color:var(--brass)}
+.govs{margin:22px 0 0;padding:16px;border:1px solid var(--surface);border-radius:14px;width:100%;max-width:340px;background:color-mix(in srgb,var(--surface) 45%,transparent);text-align:start}
+.govs[hidden],.govs [hidden]{display:none}
+.govs > b{display:block;font-size:16px;font-weight:600;margin-bottom:4px;text-align:center}
+.govs .sub{display:block;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px;text-align:center}
+.govs .pick{display:flex;gap:8px}
+.govs .pick select{flex:1;min-width:0}
+.gov-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.gov-list li{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:4px 8px;font-size:14px}
+.gov-list .rk{font-weight:700;color:var(--brass);text-align:center}
+.gov-list .nm{font-weight:500}
+.gov-list .ct{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gov-list .gb{grid-column:2 / 4;height:5px;border-radius:3px;background:var(--surface);overflow:hidden}
+.gov-list .gb span{display:block;height:100%;background:var(--brass);opacity:.55}
+.gov-list li.me .nm{color:var(--brass);font-weight:700}
+.gov-list li.me .gb span{opacity:1}
+.gov-list li.gap{display:block;text-align:center;color:var(--muted);font-size:13px;line-height:1}
+.govs .foot{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:12px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.govs .empty{font-size:13px;color:var(--muted);text-align:center;margin:0}
+.vault-special{padding:14px 14px 0}
+.vault-special .tile{max-width:160px;margin:0 auto}
 </style>
 </head>
 <body>
@@ -208,6 +235,10 @@ svg.scale.arrive{animation:arrive .8s ease}
   <p class="src-note" id="modeNote" hidden></p>
 
   <p class="live" id="live" hidden><i class="dot" aria-hidden="true"></i><span>زوار الموقع استغفروا النهارده <b id="liveCount">٠</b> مرة</span></p>
+  <div class="goal" id="goal" hidden>
+    <div class="row"><span>هدف الأسبوع لكل الزوار</span><b id="goalText"></b></div>
+    <div class="bar" aria-hidden="true"><span id="goalBar"></span></div>
+  </div>
 
   <div class="daybar">
     <svg id="moon" viewBox="0 0 40 40" aria-hidden="true"><circle class="moon-base" cx="20" cy="20" r="17"/><path class="moon-lit" id="moonLit" d=""/></svg>
@@ -268,6 +299,21 @@ svg.scale.arrive{animation:arrive .8s ease}
     </div>
   </section>
 
+  <section class="govs" id="govs" hidden>
+    <b>ترتيب المحافظات النهارده</b>
+    <div id="govPick">
+      <span class="sub">اختار محافظتك، وكل استغفار ليك هيتحسب لها في الترتيب</span>
+      <div class="pick">
+        <select class="field" id="govSelect" aria-label="المحافظة"></select>
+        <button class="solid" type="button" id="govSave">احفظ</button>
+      </div>
+    </div>
+    <div id="govBoard" hidden>
+      <ol class="gov-list" id="govList"></ol>
+      <div class="foot"><span id="govMine"></span><button class="linkbtn" type="button" id="govChange">تغيير</button></div>
+    </div>
+  </section>
+
   <div class="chips" id="chips" role="group" aria-label="صيغة الاستغفار"></div>
 
   <p class="total" id="total"></p>
@@ -284,6 +330,7 @@ svg.scale.arrive{animation:arrive .8s ease}
 <div class="vault" id="vault" hidden role="dialog" aria-modal="true" aria-labelledby="vaultTitle">
   <div class="vault-card">
     <div class="vault-head"><b id="vaultTitle">خزانة الموازين</b><span id="vaultCount"></span><button class="close-x" type="button" id="vaultClose" aria-label="إغلاق">×</button></div>
+    <div class="vault-special" id="vaultSpecial" hidden></div>
     <div class="vault-grid" id="vaultGrid"></div>
   </div>
 </div>
@@ -304,6 +351,8 @@ svg.scale.arrive{animation:arrive .8s ease}
   const SUPABASE_URL='https://xygdevtnfpiuvdrtwebi.supabase.co';
   const SUPABASE_ANON_KEY='sb_publishable_-jn1Tfca_6m926LrAQlFPw_SWGfXxpJ';
   const online=!!(SUPABASE_URL&&SUPABASE_ANON_KEY);
+  /* هدف الأسبوع لكل زوار الموقع (الأسبوع يبدأ السبت) — غيّر الرقم براحتك */
+  const WEEK_GOAL=100000;
 
   const NS='http://www.w3.org/2000/svg', N=12, MAXA=14, ARM=134, PX=180, PY=60, GOAL=100;
   const STAR_PATH='M12 1 L14.6 9.4 L23 12 L14.6 14.6 L12 23 L9.4 14.6 L1 12 L9.4 9.4 Z';
@@ -335,7 +384,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el=id=>document.getElementById(id);
 
-  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0};
+  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:''};
   try{const s=JSON.parse(localStorage.getItem('istighfar')||'null'); if(s) state=Object.assign(state,s);}catch(e){}
   try{
     const qs=new URLSearchParams(location.search);
@@ -517,6 +566,8 @@ svg.scale.arrive{animation:arrive .8s ease}
 
   const svg=el('scale'), panL=el('panL'), panR=el('panR'), beam=el('beam'), staticG=el('static');
   let bad, good, shownTheme=0, curT=THEMES[0];
+  const JAMAA={name:'ميزان الجماعة',m:'#D4A937',d:'#8F6B12',post:'minaret',base:'arch',beam:'ornate',top:'crescent',pan:'deep',str:'chain',
+    bs:'rock',bc:BADC.stone[0],be:BADC.stone[1],gs:'star8',gc:GOODC.star[0],ge:GOODC.star[1]};
   function applyTheme(){
     shownTheme=state.level||0; const t=curT=themeFor(shownTheme);
     staticG.innerHTML=postSVG(t)+baseSVG(t);
@@ -638,6 +689,8 @@ svg.scale.arrive{animation:arrive .8s ease}
     el('vaultCount').textContent='فتحت '+fmt(unlocked)+' من '+fmt(TN)+((state.level||0)>=TN?' · ومن بعدها كل ميزان جديد بشكل مختلف':'');
     g.innerHTML=THEMES.map((t,i)=>{const open=i<unlocked||(state.level||0)>=TN;
       return `<div class="tile${open?'':' locked'}${i===shownTheme?' cur':''}">${miniSVG(t)}<small>${open?t.name:'؟'}</small><i>${fmt(i+1)}</i></div>`;}).join('');
+    const sp=el('vaultSpecial'); sp.hidden=!online;
+    sp.innerHTML=`<div class="tile${state.jamaa?'':' locked'}">${miniSVG(JAMAA)}<small>${state.jamaa?JAMAA.name:'ميزان خاص'}</small><i>${state.jamaa?'اتفتح لما الزوار وصلوا لهدف الأسبوع':'بيتفتح لما كل الزوار يوصلوا لهدف الأسبوع'}</i></div>`;
     el('vault').hidden=false; el('vaultClose').focus();
     const c=g.querySelector('.cur'); if(c) c.scrollIntoView({block:'center'});
   }
@@ -755,19 +808,37 @@ svg.scale.arrive{animation:arrive .8s ease}
     if(!r.ok) throw new Error('get '+r.status);
     const a=await r.json(); return a[0]||null;
   }
+  const GOVS=[['cairo','القاهرة'],['giza','الجيزة'],['alex','الإسكندرية'],['qalyubia','القليوبية'],['sharqia','الشرقية'],
+    ['dakahlia','الدقهلية'],['gharbia','الغربية'],['menofia','المنوفية'],['beheira','البحيرة'],['kafrelsheikh','كفر الشيخ'],
+    ['damietta','دمياط'],['portsaid','بورسعيد'],['ismailia','الإسماعيلية'],['suez','السويس'],['nsinai','شمال سيناء'],
+    ['ssinai','جنوب سيناء'],['fayoum','الفيوم'],['benisuef','بني سويف'],['minya','المنيا'],['assiut','أسيوط'],['sohag','سوهاج'],
+    ['qena','قنا'],['luxor','الأقصر'],['aswan','أسوان'],['redsea','البحر الأحمر'],['newvalley','الوادي الجديد'],['matrouh','مطروح'],
+    ['abroad','خارج مصر']];
+  const GOVNAME=Object.fromEntries(GOVS);
   let pending=0, inflightN=0, flushT=null, serverToday=null, chData=null, chMissing=false;
+  let weekTotal=null, weekStart='', govCounts={}, lastRank=null, statsOK=false;
   function scheduleFlush(){ if(!online) return; clearTimeout(flushT); flushT=setTimeout(flush,2500); }
   async function flush(keep){
     if(!online||!pending||inflightN) return;
     const n=Math.min(pending,200); pending-=n; inflightN=n;
-    try{ await rpc('add_istighfar',{p_n:n,p_code:state.challenge||null},keep);
-      if(serverToday!=null) serverToday+=n; if(chData) chData.count=Number(chData.count)+n; }
+    const gov=state.gov||null;
+    const body=statsOK?{p_n:n,p_code:state.challenge||null,p_gov:gov}:{p_n:n,p_code:state.challenge||null};
+    try{ await rpc('add_istighfar',body,keep);
+      if(serverToday!=null) serverToday+=n; if(chData) chData.count=Number(chData.count)+n;
+      if(weekTotal!=null) weekTotal+=n; if(statsOK&&gov) govCounts[gov]=(govCounts[gov]||0)+n; }
     catch(e){ pending+=n; }
     finally{ inflightN=0; renderShared(); if(pending) scheduleFlush(); }
   }
   async function poll(){
     if(!online||document.hidden) return;
-    try{ serverToday=Number(await rpc('today_count')); }catch(e){}
+    try{
+      const st=await rpc('site_stats');
+      serverToday=Number(st.today); weekTotal=Number(st.week); weekStart=String(st.week_start||'');
+      govCounts={}; (st.govs||[]).forEach(g=>{govCounts[g.gov]=Number(g.count);}); statsOK=true;
+    }catch(e){
+      statsOK=false;
+      try{ serverToday=Number(await rpc('today_count')); }catch(e2){}
+    }
     if(state.challenge){ try{ chData=await getChallenge(state.challenge); chMissing=!chData; }catch(e){} }
     renderShared();
   }
@@ -785,6 +856,53 @@ svg.scale.arrive{animation:arrive .8s ease}
       el('chText').textContent= c>=g ? 'اكتمل التحدي ('+fmt(c)+' استغفارة)، تقبّل الله منكم' : fmt(c)+' من '+fmt(g)+'، باقي '+fmt(g-c);
     }
     if(state.challenge&&chMissing){state.challenge=null;chMissing=false;save();toast('التحدي ده مش موجود');}
+    renderGoal(); renderGovs();
+  }
+
+  /* ---------- weekly community goal ---------- */
+  function renderGoal(){
+    const g=el('goal'); if(!statsOK||weekTotal==null){g.hidden=true;return;}
+    g.hidden=false;
+    const c=weekTotal+pending+inflightN, done=c>=WEEK_GOAL;
+    g.classList.toggle('done',done);
+    el('goalText').textContent= done ? 'وصلنا! '+fmt(c) : fmt(c)+' من '+fmt(WEEK_GOAL);
+    el('goalBar').style.width=Math.min(100,c/WEEK_GOAL*100)+'%';
+    if(done && state.goalSeen!==weekStart){
+      state.goalSeen=weekStart; state.jamaa=true; save();
+      el('announceName').textContent=JAMAA.name;
+      const a=el('announce'); a.querySelector('span').textContent='وصلنا لهدف الأسبوع، اتفتح للكل';
+      a.classList.remove('show'); void a.offsetWidth; a.classList.add('show');
+      setTimeout(()=>{a.querySelector('span').textContent='ميزان جديد، صحيفة جديدة';},3000);
+    }
+  }
+
+  /* ---------- governorates leaderboard ---------- */
+  el('govSelect').innerHTML='<option value="">اختار محافظتك</option>'+GOVS.map(([k,n])=>`<option value="${k}">${n}</option>`).join('');
+  let govEditing=false;
+  el('govSave').onclick=()=>{const v=el('govSelect').value; if(!GOVNAME[v]){el('govSelect').focus();return;}
+    flush(); state.gov=v; save(); govEditing=false; lastRank=null; renderGovs(); toast('استغفارك هيتحسب لـ'+GOVNAME[v]);};
+  el('govChange').onclick=()=>{govEditing=true; el('govSelect').value=state.gov||''; renderGovs(); el('govSelect').focus();};
+  function renderGovs(){
+    const box=el('govs'); if(!statsOK){box.hidden=true;return;}
+    box.hidden=false;
+    const picking=!state.gov||govEditing;
+    el('govPick').hidden=!picking; el('govBoard').hidden=picking;
+    if(picking) return;
+    const counts=Object.assign({},govCounts), local=pending+inflightN;
+    if(local) counts[state.gov]=(counts[state.gov]||0)+local;
+    const ranked=Object.entries(counts).filter(([k,v])=>GOVNAME[k]&&v>0).sort((a,b)=>b[1]-a[1]);
+    const list=el('govList'); list.innerHTML='';
+    if(!ranked.length){list.innerHTML='<li class="gap">لسه محدش استغفر النهارده، خلّي '+GOVNAME[state.gov]+' الأولى</li>';el('govMine').textContent='محافظتك: '+GOVNAME[state.gov];return;}
+    const top=ranked[0][1]||1, myIdx=ranked.findIndex(([k])=>k===state.gov);
+    const row=(i)=>{const [k,v]=ranked[i],li=document.createElement('li'); if(k===state.gov) li.className='me';
+      li.innerHTML=`<span class="rk">${fmt(i+1)}</span><span class="nm"></span><span class="ct">${fmt(v)}</span><span class="gb"><span style="width:${Math.max(3,v/top*100)}%"></span></span>`;
+      li.querySelector('.nm').textContent=GOVNAME[k]; list.appendChild(li);};
+    for(let i=0;i<Math.min(5,ranked.length);i++) row(i);
+    if(myIdx>=5){const g=document.createElement('li');g.className='gap';g.textContent='⋯';list.appendChild(g);row(myIdx);}
+    const myRank=myIdx>=0?myIdx+1:null;
+    el('govMine').textContent='محافظتك: '+GOVNAME[state.gov]+(myRank?' · المركز '+fmt(myRank):'');
+    if(myRank&&lastRank&&myRank<lastRank) toast(GOVNAME[state.gov]+' طلعت المركز '+fmt(myRank)+'!');
+    if(myRank) lastRank=myRank;
   }
   el('chStart').onclick=()=>{el('chForm').hidden=false;el('chStart').hidden=true;el('chName').focus();};
   el('chCreate').onclick=async()=>{
