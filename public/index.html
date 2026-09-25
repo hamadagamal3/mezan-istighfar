@@ -434,6 +434,36 @@ svg.scale.arrive{animation:arrive .8s ease}
     bs:r[8],bc:BADC[r[9]][0],be:BADC[r[9]][1],gs:r[10],gc:GOODC[r[11]][0],ge:GOODC[r[11]][1]}));
   const TN=THEMES.length;
 
+  /* after the 50 main scales: a new generated scale every time, never repeating */
+  const OPT={post:['rod','tapered','column','minaret','double','light','twist'],base:['dome','steps','plate','tripod','arch','cloud'],
+    beam:['bar','arc','thin','twin','ornate'],top:['spike','crescent','star8','star5','ball','dome','flame','none'],
+    pan:['bowl','deep','flat','crescent','shell','basket','cloud'],str:['lines','three','chain','rope','rods'],
+    bs:['circle','rock','drop','cube','cloud','leaf','hex'],gs:['circle','drop','diamond','star4','star5','star8','hex','seed','rose','heart','date']};
+  const MAT={brass:'النحاس',silver:'الفضة',gold:'الذهب',copper:'النحاس الأحمر',bronze:'البرونز',wood:'الخشب',ebony:'الأبنوس',
+    emerald:'الزمرد',turq:'الفيروز',lapis:'اللازورد',ruby:'الياقوت',amethyst:'الجمشت',rose:'الذهب الوردي',ivory:'العاج',jade:'اليشم',
+    coral:'المرجان',indigo:'النيلة',sand:'الرمال',olive:'الزيتون',sky:'السماء',glass:'البلور',steel:'الفولاذ',sunset:'الشفق',
+    mint:'النعناع',amber:'الكهرمان',plum:'العنّاب'};
+  const ADJ=['الأندلسي','الشامي','المغربي','الدمشقي','القرطبي','الحجازي','الصحراوي','البحري','السماوي','الفجري','الليلي',
+    'المنير','العتيق','الهادئ','المرصّع','المنقوش','الملكي','البغدادي','اليمني','الغرناطي','القاهري','المضيء','الربيعي','الخريفي'];
+  function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
+  const MAIN_KEYS=new Set(RAW.map(r=>r.slice(1).join('|')));
+  const genCache={};
+  function genRaw(level,salt){const R=rng(level*7919+salt*104729+17),pick=a=>a[Math.floor(R()*a.length)];
+    const pal=pick(Object.keys(PAL)),bk=Object.keys(BADC),gk=Object.keys(GOODC);
+    return [pal,pick(OPT.post),pick(OPT.base),pick(OPT.beam),pick(OPT.top),pick(OPT.pan),pick(OPT.str),
+      pick(OPT.bs),pick(bk),pick(OPT.gs),pick(gk),pick(ADJ)];}
+  function themeFor(level){
+    if(level<TN) return THEMES[level];
+    if(genCache[level]) return genCache[level];
+    const prevKey=level>TN&&genCache[level-1]?genCache[level-1].key:'';
+    let r,salt=0,key;
+    do{ r=genRaw(level,salt++); key=r.slice(0,11).join('|'); }
+    while((MAIN_KEYS.has(key)||key===prevKey)&&salt<20);
+    const t={name:'ميزان '+MAT[r[0]]+' '+r[11],m:PAL[r[0]][0],d:PAL[r[0]][1],post:r[1],base:r[2],beam:r[3],top:r[4],pan:r[5],str:r[6],
+      bs:r[7],bc:BADC[r[8]][0],be:BADC[r[8]][1],gs:r[9],gc:GOODC[r[10]][0],ge:GOODC[r[10]][1],key};
+    return genCache[level]=t;
+  }
+
   function postSVG(t){const m=t.m,d=t.d;switch(t.post){
     case 'tapered':return `<path d="M177 60 L183 60 L189 246 L171 246Z" fill="${m}"/>`;
     case 'column':return `<rect x="171" y="70" width="18" height="176" fill="${m}"/><rect x="176" y="76" width="2" height="164" fill="${d}" opacity=".5"/><rect x="182" y="76" width="2" height="164" fill="${d}" opacity=".5"/><rect x="166" y="66" width="28" height="7" rx="2" fill="${d}"/><rect x="166" y="238" width="28" height="7" rx="2" fill="${d}"/>`;
@@ -486,15 +516,14 @@ svg.scale.arrive{animation:arrive .8s ease}
   function miniSVG(t){return `<svg viewBox="0 -4 360 276" aria-hidden="true">${postSVG(t)}${baseSVG(t)}<g transform="translate(46 60)">${panInner(t,'bad',5)}</g><g transform="translate(314 60)">${panInner(t,'good',5)}</g>${beamSVG(t)}${topSVG(t)}</svg>`;}
 
   const svg=el('scale'), panL=el('panL'), panR=el('panR'), beam=el('beam'), staticG=el('static');
-  let bad, good, shownTheme=0;
+  let bad, good, shownTheme=0, curT=THEMES[0];
   function applyTheme(){
-    shownTheme=(state.level||0)%TN; const t=THEMES[shownTheme];
+    shownTheme=state.level||0; const t=curT=themeFor(shownTheme);
     staticG.innerHTML=postSVG(t)+baseSVG(t);
     beam.innerHTML=beamSVG(t)+topSVG(t);
     bad=buildPan(panL,t,'bad'); good=buildPan(panR,t,'good');
-    const lap=Math.floor((state.level||0)/TN);
     el('stageText').innerHTML='';
-    const sp=document.createElement('span'); sp.textContent='الميزان '+fmt(shownTheme+1)+' من '+fmt(TN)+(lap?' · الدورة '+fmt(lap+1):'')+' · ';
+    const sp=document.createElement('span'); sp.textContent='الميزان '+fmt(shownTheme+1)+(shownTheme<TN?' من '+fmt(TN):'')+' · ';
     const b=document.createElement('b'); b.textContent=t.name; sp.appendChild(b); el('stageText').appendChild(sp);
     el('vaultBtn').textContent='خزانة الموازين ('+fmt(Math.min(TN,(state.level||0)+1))+'/'+fmt(TN)+')';
   }
@@ -581,7 +610,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     a.onfinish=done;
   }
   function announce(){
-    const a=el('announce'); el('announceName').textContent=THEMES[shownTheme].name;
+    const a=el('announce'); el('announceName').textContent=curT.name;
     a.classList.remove('show'); void a.offsetWidth; a.classList.add('show');
   }
   function swapTheme(){
@@ -606,7 +635,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   /* ---------- vault of scales ---------- */
   function openVault(){
     const unlocked=Math.min(TN,(state.level||0)+1), g=el('vaultGrid');
-    el('vaultCount').textContent='فتحت '+fmt(unlocked)+' من '+fmt(TN);
+    el('vaultCount').textContent='فتحت '+fmt(unlocked)+' من '+fmt(TN)+((state.level||0)>=TN?' · ومن بعدها كل ميزان جديد بشكل مختلف':'');
     g.innerHTML=THEMES.map((t,i)=>{const open=i<unlocked||(state.level||0)>=TN;
       return `<div class="tile${open?'':' locked'}${i===shownTheme?' cur':''}">${miniSVG(t)}<small>${open?t.name:'؟'}</small><i>${fmt(i+1)}</i></div>`;}).join('');
     el('vault').hidden=false; el('vaultClose').focus();
