@@ -1223,21 +1223,39 @@ svg.scale.arrive{animation:arrive .8s ease}
     catch(e){ pending+=n; }
     finally{ inflightN=0; renderShared(); if(pending) scheduleFlush(); }
   }
+  let personalOK=true;
+  function applyDed(d){
+    if(d){ dedData=d; if(!state.ded.name){state.ded={code:d.code,name:d.name,g:d.g}; state.personName=d.name; state.personG=d.g; el('personName').value=d.name; save(); render();} }
+    else if(!state.ded.name){ state.ded=null; save(); }
+  }
   async function poll(){
     if(!online||document.hidden) return;
-    try{
-      const st=await rpc('site_stats');
+    /* 1) global stats: through our Cloudflare Worker (cached), falling back to Supabase directly */
+    let st=null;
+    if(/^https?:$/.test(location.protocol)){
+      try{ const r=await fetch('/api/stats',{cache:'no-store'}); if(r.ok&&(r.headers.get('content-type')||'').includes('json')) st=await r.json(); }catch(e){}
+    }
+    if(!st){ try{ st=await rpc('site_stats'); }catch(e){} }
+    if(st){
       serverToday=Number(st.today); weekTotal=Number(st.week); weekStart=String(st.week_start||'');
       govCounts={}; (st.govs||[]).forEach(g=>{govCounts[g.gov]=Number(g.count);}); statsOK=true;
-    }catch(e){
+    }else{
       statsOK=false;
       try{ serverToday=Number(await rpc('today_count')); }catch(e2){}
     }
+    /* 2) personal data (your referrals, your challenge, your dedication) in one request */
+    const dedCode=(state.ded&&state.ded.code)||null;
+    if(personalOK){
+      try{
+        const pp=await rpc('site_personal',{p_rid:state.rid,p_code:state.challenge||null,p_ded:dedCode})||{};
+        refData=pp.ref?{people:Number(pp.ref.people),count:Number(pp.ref.count)}:{people:0,count:0};
+        if(state.challenge){ chData=pp.challenge||null; chMissing=!pp.challenge; }
+        if(dedCode) applyDed(pp.ded||null);
+        renderShared(); return;
+      }catch(e){ personalOK=false; }
+    }
     if(state.challenge){ try{ chData=await getChallenge(state.challenge); chMissing=!chData; }catch(e){} }
-    if(state.ded&&state.ded.code){ try{ const d=await getRow('dedications','code',state.ded.code,'code,name,g,count,people');
-        if(d){ dedData=d; if(!state.ded.name){state.ded={code:d.code,name:d.name,g:d.g}; state.personName=d.name; state.personG=d.g; el('personName').value=d.name; save(); render();} }
-        else if(!state.ded.name){ state.ded=null; save(); }
-      }catch(e){} }
+    if(dedCode){ try{ applyDed(await getRow('dedications','code',dedCode,'code,name,g,count,people')); }catch(e){} }
     try{ refData=await getRow('referrals','rid',state.rid,'people,count'); if(!refData) refData={people:0,count:0}; }catch(e){ refData=null; }
     renderShared();
   }
@@ -1344,7 +1362,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   el('chLeave').onclick=async()=>{ if(!confirm('تخرج من التحدي؟')) return; await flush(); state.challenge=null; chData=null; save();
     el('chForm').hidden=true; el('chStart').hidden=false; renderShared(); };
   document.addEventListener('visibilitychange',()=>{ if(document.hidden) flush(true); else poll(); });
-  if(online){ poll(); setInterval(poll,15000); }
+  if(online){ poll(); setInterval(poll,30000); }
 
   el('press').addEventListener('click',()=>{
     if(state.date!==todayKey()){state.date=todayKey();state.today=0;shownStars=-1;}
