@@ -52,8 +52,6 @@ svg.scale{width:100%;max-width:420px;height:auto;margin:2px 0 0;overflow:visible
 .string{stroke:var(--brass);stroke-width:1.4;fill:none;opacity:.8}
 .bowl{fill:var(--brass)}
 .st{transition:opacity .55s ease, transform .7s cubic-bezier(.2,.8,.2,1);transform-box:fill-box;transform-origin:center}
-.bad{fill:var(--stone);stroke:var(--stone-edge);stroke-width:1.2}
-.good{fill:var(--pearl);stroke:var(--pearl-edge);stroke-width:1}
 .bad.off{opacity:0;transform:translateY(-34px) scale(.3)}
 .good.off{opacity:0;transform:translateY(-46px)}
 .noanim .st{transition:none!important}
@@ -160,6 +158,37 @@ input.field{flex:1 1 150px;max-width:220px}
 .support svg{width:20px;height:20px;fill:none;stroke:var(--brass);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .support:focus-visible{outline:3px solid var(--text);outline-offset:3px}
 main{padding-bottom:90px}
+
+.scale-wrap{position:relative;width:100%;max-width:420px;display:flex;justify-content:center}
+svg.scale{transition:opacity .4s ease, transform .4s ease}
+svg.scale.fadeout{opacity:0;transform:scale(.94)}
+svg.scale.arrive{animation:arrive .8s ease}
+@keyframes arrive{from{opacity:0;transform:translateY(-26px)}to{opacity:1;transform:none}}
+.announce{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);opacity:0;pointer-events:none;background:var(--card);border:1px solid var(--brass);
+  border-radius:14px;padding:10px 20px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.18);white-space:nowrap;z-index:5}
+.announce span{display:block;font-size:13px;color:var(--muted)}
+.announce b{display:block;font-family:'Amiri',serif;font-size:22px;font-weight:700}
+.announce.show{animation:ann 2.8s ease forwards}
+@keyframes ann{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}12%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
+.stage{font-size:13px;color:var(--muted);margin:2px 0 0;display:flex;flex-wrap:wrap;gap:4px 10px;justify-content:center;align-items:center}
+.stage b{color:var(--text);font-weight:600}
+.vault{position:fixed;inset:0;z-index:30;background:var(--veil);display:flex;align-items:center;justify-content:center;padding:16px}
+.vault[hidden]{display:none}
+.vault-card{background:var(--card);border:1px solid var(--brass);border-radius:18px;width:100%;max-width:560px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden}
+.vault-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--surface)}
+.vault-head b{font-family:'Amiri',serif;font-size:22px}
+.vault-head span{font-size:13px;color:var(--muted);flex:1}
+.close-x{font:inherit;font-size:24px;line-height:1;width:36px;height:36px;border-radius:50%;border:none;background:var(--surface);color:var(--text);cursor:pointer}
+.close-x:focus-visible{outline:3px solid var(--text);outline-offset:2px}
+.vault-grid{overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:10px}
+.tile{background:color-mix(in srgb,var(--surface) 55%,transparent);border-radius:12px;padding:6px 4px 8px;text-align:center;border:2px solid transparent}
+.tile svg{width:100%;height:auto;display:block}
+.tile small{display:block;font-size:12px;line-height:1.4;margin-top:2px}
+.tile i{font-style:normal;font-size:11px;color:var(--muted)}
+.tile.cur{border-color:var(--brass)}
+.tile.locked svg{filter:grayscale(1);opacity:.28}
+.tile.locked small{color:var(--muted)}
+@media (prefers-reduced-motion: reduce){svg.scale.arrive,.announce.show{animation:none}.announce.show{opacity:1}}
 </style>
 </head>
 <body>
@@ -187,20 +216,16 @@ main{padding-bottom:90px}
 
   <div class="sky" id="sky" aria-live="polite"></div>
 
-  <svg class="scale noanim" id="scale" viewBox="0 0 360 272" aria-hidden="true">
-    <rect class="post" x="176" y="60" width="8" height="186" rx="3"/>
-    <path class="brass-dark" d="M130 262 Q180 236 230 262 Z"/>
-    <rect class="post" x="118" y="258" width="124" height="8" rx="4"/>
-    <g id="panL"></g>
-    <g id="panR"></g>
-    <g id="beam">
-      <rect class="beam-bar" x="46" y="56" width="268" height="8" rx="4"/>
-      <path class="brass-dark" d="M180 22 L186 50 L174 50 Z"/>
-      <circle class="brass-dark" cx="180" cy="60" r="9"/>
-      <circle cx="46" cy="60" r="5" class="brass-dark"/>
-      <circle cx="314" cy="60" r="5" class="brass-dark"/>
-    </g>
-  </svg>
+  <div class="scale-wrap">
+    <svg class="scale noanim" id="scale" viewBox="0 0 360 272" aria-hidden="true">
+      <g id="static"></g>
+      <g id="panL"></g>
+      <g id="panR"></g>
+      <g id="beam"></g>
+    </svg>
+    <div class="announce" id="announce" aria-live="polite"><span>ميزان جديد، صحيفة جديدة</span><b id="announceName"></b></div>
+  </div>
+  <p class="stage"><span id="stageText"></span><button class="linkbtn" type="button" id="vaultBtn">خزانة الموازين</button></p>
 
   <p class="phrase" id="phrase"></p>
   <button class="press" id="press" type="button">أستغفر الله</button>
@@ -256,6 +281,12 @@ main{padding-bottom:90px}
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"/><path d="M9 10h6M9 13.5h4"/></svg>
   الدعم الفني
 </a>
+<div class="vault" id="vault" hidden role="dialog" aria-modal="true" aria-labelledby="vaultTitle">
+  <div class="vault-card">
+    <div class="vault-head"><b id="vaultTitle">خزانة الموازين</b><span id="vaultCount"></span><button class="close-x" type="button" id="vaultClose" aria-label="إغلاق">×</button></div>
+    <div class="vault-grid" id="vaultGrid"></div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status"></div>
 <div class="reveal" id="reveal" hidden role="dialog" aria-modal="true" aria-labelledby="revealKicker">
   <div class="card" id="card">
@@ -304,7 +335,7 @@ main{padding-bottom:90px}
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el=id=>document.getElementById(id);
 
-  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null};
+  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0};
   try{const s=JSON.parse(localStorage.getItem('istighfar')||'null'); if(s) state=Object.assign(state,s);}catch(e){}
   try{
     const qs=new URLSearchParams(location.search);
@@ -316,17 +347,158 @@ main{padding-bottom:90px}
 
   /* ---------- scale ---------- */
   const slots=[[-28,83],[-14,83],[0,83],[14,83],[28,83],[-21,70],[-7,70],[7,70],[21,70],[-14,57],[0,57],[14,57]];
-  function buildPan(g,cls){
-    const mk=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||g).appendChild(e);return e;};
-    mk('path',{class:'string',d:'M0 0 L-52 90 M0 0 L52 90'});
-    const stones=mk('g',{});
-    const list=slots.map(([x,y])=>mk('circle',{cx:x,cy:y,r:7,class:'st '+cls},stones));
-    mk('path',{class:'bowl',d:'M-56 90 Q0 120 56 90 Z'});
-    mk('circle',{class:'brass-dark',cx:0,cy:0,r:3});
-    return {stones,list};
+  /* ---------- 50 scale designs ---------- */
+  const PAL={brass:['#B08D4A','#7A5D2A'],silver:['#A9B3BC','#6E7882'],gold:['#D4A937','#8F6B12'],copper:['#C07A4A','#7E4726'],
+    bronze:['#9C7A45','#5E4524'],wood:['#9A6B3F','#5E3E20'],ebony:['#5A4A40','#2F2520'],emerald:['#2E8B6A','#1B5A44'],
+    turq:['#3AA5A8','#1F6E71'],lapis:['#3C5BA8','#243A73'],ruby:['#A8404F','#6E2432'],amethyst:['#7E5AA6','#513774'],
+    rose:['#C98E86','#8A5A54'],ivory:['#D9CFB8','#9C8F72'],jade:['#6FA58A','#44705A'],coral:['#D9785E','#94462F'],
+    indigo:['#5B5FA8','#35386F'],sand:['#C8A878','#8C7048'],olive:['#8A8F4A','#5A5E2A'],sky:['#7FB2D9','#4A7EA6'],
+    glass:['#9FD3D6','#5E9EA2'],steel:['#7A8A99','#4A5663'],sunset:['#E0924A','#A05E1E'],mint:['#7CC7A6','#4A8E71'],
+    amber:['#D99A2B','#94620F'],plum:['#8E4A6E','#5A2A45']};
+  const BADC={stone:['#4B505C','#2E323A'],ink:['#2B2F3A','#15181E'],coal:['#2E2A28','#141211'],cloud:['#8A8F98','#5D626B'],
+    weed:['#3F5A3A','#243522'],rust:['#5A3A2E','#34211A'],ash:['#6B6B6B','#444444']};
+  const GOODC={pearl:['#F6E9C4','#C9A962'],star:['#FFD86B','#C99A1E'],rose:['#F4A7B9','#C0647C'],date:['#A8683A','#6B3E1E'],
+    emerald:['#5FD39A','#2E8B6A'],turq:['#7FE3E0','#3AA5A8'],light:['#FFFBE6','#E8D58A'],sapphire:['#8FB8FF','#4A6FC0'],
+    amber:['#FFC56B','#C98A1E'],white:['#FFFFFF','#B9C2CC'],olive:['#9DB35A','#5F7330'],pomegranate:['#E0485E','#9A2235']};
+  const starPath=(n,R,r,cx=0,cy=0)=>{let d='';for(let k=0;k<n*2;k++){const a=Math.PI*k/n-Math.PI/2,q=k%2?r:R;d+=(k?'L':'M')+(cx+q*Math.cos(a)).toFixed(2)+' '+(cy+q*Math.sin(a)).toFixed(2);}return d+'Z';};
+  const SH={
+    circle:'<circle r="7"/>',
+    rock:'<path d="M-7 1 L-4 -6 L3 -7 L7 -2 L6 5 L-1 7 L-6 5Z"/>',
+    drop:'<path d="M0 -8 C3 -4 6 -1 6 2.5 A6 6 0 0 1 -6 2.5 C-6 -1 -3 -4 0 -8Z"/>',
+    diamond:'<path d="M0 -8 L6.5 0 L0 8 L-6.5 0Z"/>',
+    star4:'<path d="'+starPath(4,8.5,2.8)+'"/>',
+    star5:'<path d="'+starPath(5,8.2,3.6)+'"/>',
+    star8:'<path d="'+starPath(8,8,4.2)+'"/>',
+    hex:'<path d="M-6.5 -3.75 L0 -7.5 L6.5 -3.75 L6.5 3.75 L0 7.5 L-6.5 3.75Z"/>',
+    date:'<ellipse rx="4.8" ry="7.5" transform="rotate(25)"/>',
+    seed:'<ellipse rx="5.5" ry="7"/>',
+    rose:'<g stroke-width=".6"><circle cy="-3.6" r="3.4"/><circle cx="3.4" cy="-1.1" r="3.4"/><circle cx="2.1" cy="3" r="3.4"/><circle cx="-2.1" cy="3" r="3.4"/><circle cx="-3.4" cy="-1.1" r="3.4"/><circle r="2.2"/></g>',
+    leaf:'<path d="M-7 5 C-7 -4 0 -8 7 -7 C7 1 2 7 -7 5Z"/>',
+    cloud:'<g stroke-width=".6"><circle cx="-3.5" cy="1.5" r="4.5"/><circle cx="3" cy="1" r="5"/><circle cy="-2.5" r="4.5"/></g>',
+    cube:'<rect x="-6" y="-6" width="12" height="12" rx="2.5"/>',
+    heart:'<path d="M0 7 C-9 0 -7 -8 0 -4 C7 -8 9 0 0 7Z"/>'
+  };
+  const RAW=[
+    ['الميزان النحاسي','brass','rod','dome','bar','spike','bowl','lines','circle','stone','circle','pearl'],
+    ['الميزان الفضي','silver','column','steps','ornate','star8','bowl','chain','drop','ink','drop','light'],
+    ['ميزان الهلال','gold','tapered','plate','arc','crescent','crescent','lines','rock','stone','star5','star'],
+    ['ميزان السوق القديم','wood','rod','tripod','bar','ball','basket','rope','rock','coal','date','date'],
+    ['ميزان الأندلس','copper','minaret','arch','ornate','dome','bowl','chain','circle','stone','rose','rose'],
+    ['ميزان البحر','turq','twist','plate','arc','ball','shell','rope','leaf','weed','circle','pearl'],
+    ['ميزان الزمرد','emerald','column','steps','bar','star8','deep','chain','rock','stone','diamond','emerald'],
+    ['ميزان الفيروز','turq','tapered','arch','ornate','star8','bowl','lines','hex','stone','hex','turq'],
+    ['ميزان الزجاج','glass','light','plate','thin','ball','flat','three','cloud','cloud','circle','light'],
+    ['ميزان السحاب','sky','light','cloud','arc','star5','cloud','lines','cloud','cloud','star5','star'],
+    ['ميزان الياقوت','ruby','column','steps','ornate','star8','deep','chain','rock','stone','diamond','pomegranate'],
+    ['ميزان الجمشت','amethyst','tapered','dome','twin','star5','bowl','lines','hex','ink','hex','white'],
+    ['ميزان اللازورد','lapis','column','arch','ornate','star8','bowl','chain','rock','ink','diamond','sapphire'],
+    ['ميزان العقيق','plum','rod','plate','bar','ball','deep','three','circle','rust','seed','pomegranate'],
+    ['ميزان الكهرمان','amber','twist','dome','arc','flame','bowl','rope','drop','rust','drop','amber'],
+    ['ميزان المرجان','coral','rod','plate','arc','ball','shell','rope','leaf','weed','circle','rose'],
+    ['ميزان الذهب الوردي','rose','tapered','steps','thin','star5','bowl','lines','circle','ash','heart','rose'],
+    ['ميزان العاج','ivory','column','steps','ornate','dome','flat','chain','cube','stone','circle','pearl'],
+    ['ميزان اليشم','jade','double','dome','twin','ball','deep','lines','rock','weed','seed','emerald'],
+    ['ميزان النخيل','wood','tapered','tripod','arc','none','basket','rope','rock','coal','date','date'],
+    ['ميزان الصحراء','sand','tapered','plate','bar','star5','bowl','rope','rock','rust','star4','amber'],
+    ['ميزان الواحة','mint','rod','plate','arc','ball','deep','lines','leaf','weed','drop','turq'],
+    ['ميزان القافلة','bronze','double','tripod','bar','crescent','basket','rope','cube','coal','star4','star'],
+    ['ميزان المشربية','wood','column','arch','ornate','dome','flat','chain','hex','coal','hex','amber'],
+    ['ميزان القناديل','brass','minaret','steps','arc','flame','deep','chain','drop','ink','drop','amber'],
+    ['ميزان المحراب','emerald','minaret','arch','ornate','crescent','bowl','chain','rock','stone','star8','light'],
+    ['ميزان القبة','gold','column','arch','arc','dome','bowl','lines','circle','stone','circle','star'],
+    ['ميزان المئذنة','ivory','minaret','steps','bar','crescent','flat','three','cube','ash','star5','star'],
+    ['ميزان الفجر','coral','light','cloud','arc','star5','cloud','lines','cloud','cloud','circle','amber'],
+    ['ميزان الضحى','amber','rod','plate','thin','ball','bowl','three','drop','ash','circle','light'],
+    ['ميزان الغروب','sunset','tapered','dome','arc','flame','crescent','lines','cloud','cloud','drop','amber'],
+    ['ميزان الليل','indigo','light','plate','thin','crescent','crescent','lines','cloud','cloud','star5','star'],
+    ['ميزان السَّحَر','lapis','light','cloud','arc','star8','cloud','three','cloud','cloud','star4','light'],
+    ['ميزان النجمة','gold','double','steps','ornate','star5','bowl','chain','rock','stone','star5','star'],
+    ['ميزان الثريا','indigo','twist','arch','twin','star8','deep','chain','rock','ink','star4','white'],
+    ['ميزان المطر','sky','rod','plate','thin','ball','deep','three','cloud','cloud','drop','sapphire'],
+    ['ميزان الندى','mint','tapered','plate','arc','ball','bowl','lines','leaf','weed','drop','light'],
+    ['ميزان الورد','rose','twist','dome','arc','ball','bowl','rope','leaf','weed','rose','rose'],
+    ['ميزان الياسمين','ivory','double','plate','thin','star5','flat','lines','leaf','weed','rose','white'],
+    ['ميزان الزيتون','olive','rod','tripod','bar','ball','basket','rope','rock','coal','seed','olive'],
+    ['ميزان الرمان','ruby','tapered','dome','ornate','dome','deep','chain','rock','rust','circle','pomegranate'],
+    ['ميزان النهر','steel','column','plate','arc','ball','shell','chain','rock','stone','drop','sapphire'],
+    ['ميزان الموج','turq','twist','cloud','arc','none','shell','rope','leaf','weed','circle','turq'],
+    ['ميزان اللؤلؤ','silver','light','plate','thin','ball','shell','three','rock','stone','circle','white'],
+    ['ميزان الحرير','plum','double','arch','twin','star5','bowl','lines','hex','ink','heart','rose'],
+    ['ميزان البلور','glass','twist','steps','ornate','star8','flat','chain','cube','ash','diamond','white'],
+    ['ميزان الأبنوس','ebony','column','steps','ornate','crescent','deep','chain','cube','coal','circle','pearl'],
+    ['ميزان الفولاذ','steel','double','tripod','twin','spike','flat','rods','cube','rust','hex','light'],
+    ['ميزان البستان','jade','rod','dome','arc','ball','basket','rope','leaf','weed','seed','pomegranate'],
+    ['ميزان البدر','gold','light','cloud','arc','crescent','crescent','three','cloud','cloud','star5','light']
+  ];
+  const THEMES=RAW.map(r=>({name:r[0],m:PAL[r[1]][0],d:PAL[r[1]][1],post:r[2],base:r[3],beam:r[4],top:r[5],pan:r[6],str:r[7],
+    bs:r[8],bc:BADC[r[9]][0],be:BADC[r[9]][1],gs:r[10],gc:GOODC[r[11]][0],ge:GOODC[r[11]][1]}));
+  const TN=THEMES.length;
+
+  function postSVG(t){const m=t.m,d=t.d;switch(t.post){
+    case 'tapered':return `<path d="M177 60 L183 60 L189 246 L171 246Z" fill="${m}"/>`;
+    case 'column':return `<rect x="171" y="70" width="18" height="176" fill="${m}"/><rect x="176" y="76" width="2" height="164" fill="${d}" opacity=".5"/><rect x="182" y="76" width="2" height="164" fill="${d}" opacity=".5"/><rect x="166" y="66" width="28" height="7" rx="2" fill="${d}"/><rect x="166" y="238" width="28" height="7" rx="2" fill="${d}"/>`;
+    case 'minaret':return `<rect x="176" y="60" width="8" height="40" fill="${m}"/><rect x="167" y="98" width="26" height="6" rx="2" fill="${d}"/><rect x="172" y="104" width="16" height="142" fill="${m}"/><rect x="165" y="170" width="30" height="6" rx="2" fill="${d}"/><path d="M177 120h6v14h-6z M177 192h6v14h-6z" fill="${d}"/>`;
+    case 'double':return `<rect x="169" y="60" width="5" height="186" rx="2" fill="${m}"/><rect x="186" y="60" width="5" height="186" rx="2" fill="${m}"/><rect x="169" y="120" width="22" height="4" fill="${d}"/><rect x="169" y="190" width="22" height="4" fill="${d}"/>`;
+    case 'light':return `<rect x="169" y="60" width="22" height="186" rx="11" fill="${m}" opacity=".25"/><rect x="177" y="60" width="6" height="186" rx="3" fill="${m}"/>`;
+    case 'twist':return `<rect x="175" y="60" width="10" height="186" rx="3" fill="${m}"/>`+Array.from({length:12},(_,i)=>`<path d="M175 ${74+i*14} L185 ${68+i*14}" stroke="${d}" stroke-width="2"/>`).join('');
+    default:return `<rect x="176" y="60" width="8" height="186" rx="3" fill="${m}"/>`;}}
+  function baseSVG(t){const m=t.m,d=t.d;switch(t.base){
+    case 'steps':return `<rect x="150" y="236" width="60" height="10" rx="2" fill="${d}"/><rect x="132" y="246" width="96" height="10" rx="2" fill="${m}"/><rect x="118" y="256" width="124" height="9" rx="3" fill="${d}"/>`;
+    case 'plate':return `<ellipse cx="180" cy="258" rx="64" ry="9" fill="${m}"/><ellipse cx="180" cy="251" rx="36" ry="6" fill="${d}"/>`;
+    case 'tripod':return `<path d="M180 236 L128 266 M180 236 L232 266 M180 236 L180 266" stroke="${m}" stroke-width="6" stroke-linecap="round"/><circle cx="180" cy="238" r="7" fill="${d}"/>`;
+    case 'arch':return `<path d="M124 266 L124 250 Q180 214 236 250 L236 266Z" fill="${m}"/><path d="M152 266 L152 257 Q180 238 208 257 L208 266Z" fill="${d}"/>`;
+    case 'cloud':return `<g fill="${m}" opacity=".85"><circle cx="150" cy="256" r="12"/><circle cx="170" cy="250" r="15"/><circle cx="192" cy="251" r="14"/><circle cx="212" cy="257" r="11"/><rect x="140" y="256" width="82" height="11" rx="5"/></g>`;
+    default:return `<path d="M130 262 Q180 236 230 262Z" fill="${d}"/><rect x="118" y="258" width="124" height="8" rx="4" fill="${m}"/>`;}}
+  function beamSVG(t){const m=t.m,d=t.d;const caps=`<circle cx="46" cy="60" r="5" fill="${d}"/><circle cx="314" cy="60" r="5" fill="${d}"/>`;let b;switch(t.beam){
+    case 'arc':b=`<path d="M46 62 Q180 42 314 62" fill="none" stroke="${m}" stroke-width="7" stroke-linecap="round"/>`+caps;break;
+    case 'thin':b=`<rect x="46" y="58" width="268" height="4" rx="2" fill="${m}"/><circle cx="46" cy="60" r="7" fill="${m}"/><circle cx="314" cy="60" r="7" fill="${m}"/>`;break;
+    case 'twin':b=`<rect x="46" y="53" width="268" height="4" rx="2" fill="${m}"/><rect x="46" y="63" width="268" height="4" rx="2" fill="${m}"/>`+caps;break;
+    case 'ornate':b=`<rect x="46" y="56" width="268" height="8" rx="4" fill="${m}"/><path d="M180 43 L197 60 L180 77 L163 60Z" fill="${d}"/><path d="M32 60 L46 51 L46 69Z M328 60 L314 51 L314 69Z" fill="${m}"/>`+caps;break;
+    default:b=`<rect x="46" y="56" width="268" height="8" rx="4" fill="${m}"/>`+caps;}
+    return b+`<circle cx="180" cy="60" r="9" fill="${d}"/><circle cx="180" cy="60" r="3.5" fill="${m}"/>`;}
+  function topSVG(t){const m=t.m,d=t.d,stem=`<rect x="178.5" y="44" width="3" height="10" fill="${d}"/>`;switch(t.top){
+    case 'crescent':return stem+`<path d="M185 24 A12 12 0 1 0 185 46 A9.5 9.5 0 1 1 185 24Z" fill="${m}"/>`;
+    case 'star8':return stem+`<path d="${starPath(8,12,5.5,180,34)}" fill="${m}"/>`;
+    case 'star5':return stem+`<path d="${starPath(5,12,5,180,34)}" fill="${m}"/>`;
+    case 'ball':return stem+`<circle cx="180" cy="38" r="6.5" fill="${m}"/>`;
+    case 'dome':return `<path d="M168 51 Q168 32 180 27 Q192 32 192 51Z" fill="${m}"/><rect x="179" y="17" width="2" height="11" fill="${d}"/>`;
+    case 'flame':return stem+`<path d="M180 20 C186 29 190 35 186 42 A7 7 0 0 1 174 42 C170 35 174 29 180 20Z" fill="${m}"/>`;
+    case 'none':return '';
+    default:return `<path d="M180 22 L186 50 L174 50Z" fill="${d}"/>`;}}
+  function panSVG(t){const m=t.m,d=t.d;switch(t.pan){
+    case 'deep':return `<path d="M-54 88 Q-52 124 0 124 Q52 124 54 88Z" fill="${m}"/><path d="M-54 88 L54 88" stroke="${d}" stroke-width="2"/>`;
+    case 'flat':return `<rect x="-58" y="88" width="116" height="7" rx="3" fill="${m}"/><rect x="-44" y="95" width="88" height="4" rx="2" fill="${d}"/>`;
+    case 'crescent':return `<path d="M-60 84 Q0 136 60 84 Q0 110 -60 84Z" fill="${m}"/>`;
+    case 'shell':{let sc='M56 90';for(let k=0;k<8;k++)sc+=' a7 6 0 0 0 -14 0';return `<path d="M-56 90 Q0 124 56 90Z" fill="${m}"/><path d="${sc}" fill="${m}"/><path d="M-40 97 L0 118 M-14 91 L0 118 M14 91 L0 118 M40 97 L0 118" stroke="${d}" stroke-width="1.5"/>`;}
+    case 'basket':return `<path d="M-56 88 L56 88 L44 114 L-44 114Z" fill="${m}"/><path d="M-30 88 L-24 114 M0 88 L0 114 M30 88 L24 114 M-50 100 L50 100" stroke="${d}" stroke-width="1.5"/>`;
+    case 'cloud':return `<g fill="${m}"><circle cx="-38" cy="98" r="12"/><circle cx="-16" cy="104" r="15"/><circle cx="12" cy="104" r="15"/><circle cx="36" cy="98" r="12"/><rect x="-50" y="90" width="100" height="8" rx="4"/></g>`;
+    default:return `<path d="M-56 90 Q0 120 56 90Z" fill="${m}"/>`;}}
+  function stringsSVG(t){const m=t.m,d=t.d;const L='M0 0 L-52 89 M0 0 L52 89';switch(t.str){
+    case 'three':return `<path d="${L} M0 0 L0 88" stroke="${m}" stroke-width="1.4" fill="none" opacity=".85"/>`;
+    case 'chain':return `<path d="${L}" stroke="${m}" stroke-width="2.2" stroke-dasharray="3 2.5" fill="none"/>`;
+    case 'rope':return `<path d="${L}" stroke="${d}" stroke-width="2.6" stroke-dasharray="5 1.5" fill="none" opacity=".9"/>`;
+    case 'rods':return `<path d="${L}" stroke="${m}" stroke-width="3.2" stroke-linecap="round" fill="none"/>`;
+    default:return `<path d="${L}" stroke="${m}" stroke-width="1.4" fill="none" opacity=".85"/>`;}}
+  function stoneMarkup(t,cls,i){const [x,y]=slots[i],bad=cls==='bad';
+    return `<g transform="translate(${x} ${y})"><g class="st ${cls}" style="fill:${bad?t.bc:t.gc};stroke:${bad?t.be:t.ge};stroke-width:1">${SH[bad?t.bs:t.gs]}</g></g>`;}
+  function panInner(t,cls,count){return stringsSVG(t)+'<g class="stones">'+slots.slice(0,count).map((_,i)=>stoneMarkup(t,cls,i)).join('')+'</g>'+panSVG(t)+`<circle r="3" fill="${t.d}"/>`;}
+  function buildPan(g,t,cls){g.innerHTML=panInner(t,cls,N);const stones=g.querySelector('.stones');return {stones,list:[...stones.querySelectorAll('.st')]};}
+  function miniSVG(t){return `<svg viewBox="0 -4 360 276" aria-hidden="true">${postSVG(t)}${baseSVG(t)}<g transform="translate(46 60)">${panInner(t,'bad',5)}</g><g transform="translate(314 60)">${panInner(t,'good',5)}</g>${beamSVG(t)}${topSVG(t)}</svg>`;}
+
+  const svg=el('scale'), panL=el('panL'), panR=el('panR'), beam=el('beam'), staticG=el('static');
+  let bad, good, shownTheme=0;
+  function applyTheme(){
+    shownTheme=(state.level||0)%TN; const t=THEMES[shownTheme];
+    staticG.innerHTML=postSVG(t)+baseSVG(t);
+    beam.innerHTML=beamSVG(t)+topSVG(t);
+    bad=buildPan(panL,t,'bad'); good=buildPan(panR,t,'good');
+    const lap=Math.floor((state.level||0)/TN);
+    el('stageText').innerHTML='';
+    const sp=document.createElement('span'); sp.textContent='الميزان '+fmt(shownTheme+1)+' من '+fmt(TN)+(lap?' · الدورة '+fmt(lap+1):'')+' · ';
+    const b=document.createElement('b'); b.textContent=t.name; sp.appendChild(b); el('stageText').appendChild(sp);
+    el('vaultBtn').textContent='خزانة الموازين ('+fmt(Math.min(TN,(state.level||0)+1))+'/'+fmt(TN)+')';
   }
-  const svg=el('scale'), panL=el('panL'), panR=el('panR'), beam=el('beam');
-  const bad=buildPan(panL,'bad'), good=buildPan(panR,'good');
+  applyTheme();
 
   let cur=null, target=0, raf=null, holding=false, pendingStars=0;
   function place(a){
@@ -341,9 +513,8 @@ main{padding-bottom:90px}
     cur+=d*0.07; place(cur); raf=requestAnimationFrame(tick);
   }
   function stonesFor(c){
-    if(c<N) return [c,N-c];
-    if(holding && c%N===0) return [N,0];
-    return [c%N,0];
+    if(holding && c>0 && c%N===0) return [N,0];
+    const l=c%N; return [l,N-l];
   }
 
   /* ---------- sky ---------- */
@@ -409,21 +580,43 @@ main{padding-bottom:90px}
     ],{duration:1100,easing:'cubic-bezier(.3,.1,.2,1)'});
     a.onfinish=done;
   }
+  function announce(){
+    const a=el('announce'); el('announceName').textContent=THEMES[shownTheme].name;
+    a.classList.remove('show'); void a.offsetWidth; a.classList.add('show');
+  }
+  function swapTheme(){
+    if(reduce){applyTheme();holding=false;render();cur=target;place(cur);announce();return;}
+    svg.classList.add('fadeout');
+    setTimeout(()=>{
+      applyTheme(); holding=false;
+      svg.classList.add('noanim'); render(); if(raf){cancelAnimationFrame(raf);raf=null;} cur=target; place(cur);
+      svg.classList.remove('fadeout'); svg.classList.add('arrive'); announce();
+      setTimeout(()=>svg.classList.remove('arrive'),900);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>svg.classList.remove('noanim')));
+    },420);
+  }
   function gather(){
     pendingStars++;
-    if(reduce){holding=false;render();flyStar();return;}
+    if(reduce){flyStar();swapTheme();return;}
     svg.classList.add('glowing');
     good.list.forEach((c,i)=>{const [x,y]=slots[i];c.style.transform=`translate(${-x}px,${70-y}px) scale(.2)`;c.style.opacity='0';});
-    setTimeout(()=>{
-      svg.classList.remove('glowing');
-      flyStar();
-      svg.classList.add('noanim');
-      holding=false;
-      good.list.forEach(c=>{c.style.transform='';c.style.opacity='';});
-      render();
-      requestAnimationFrame(()=>requestAnimationFrame(()=>svg.classList.remove('noanim')));
-    },650);
+    setTimeout(()=>{ svg.classList.remove('glowing'); flyStar(); swapTheme(); },650);
   }
+
+  /* ---------- vault of scales ---------- */
+  function openVault(){
+    const unlocked=Math.min(TN,(state.level||0)+1), g=el('vaultGrid');
+    el('vaultCount').textContent='فتحت '+fmt(unlocked)+' من '+fmt(TN);
+    g.innerHTML=THEMES.map((t,i)=>{const open=i<unlocked||(state.level||0)>=TN;
+      return `<div class="tile${open?'':' locked'}${i===shownTheme?' cur':''}">${miniSVG(t)}<small>${open?t.name:'؟'}</small><i>${fmt(i+1)}</i></div>`;}).join('');
+    el('vault').hidden=false; el('vaultClose').focus();
+    const c=g.querySelector('.cur'); if(c) c.scrollIntoView({block:'center'});
+  }
+  function closeVault(){el('vault').hidden=true;el('vaultBtn').focus();}
+  el('vaultBtn').addEventListener('click',openVault);
+  el('vaultClose').addEventListener('click',closeVault);
+  el('vault').addEventListener('click',e=>{if(e.target.id==='vault')closeVault();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el('vault').hidden)closeVault();});
 
   /* ---------- reveal letter ---------- */
   function openLetter(L){
@@ -588,7 +781,7 @@ main{padding-bottom:90px}
     if(newDay&&!reduce){const m=el('moon');m.classList.remove('pop');void m.getBBox();m.classList.add('pop');}
     if(online){pending++; scheduleFlush(); renderShared();}
     const full=state.today%N===0;
-    if(full){holding=true; render(); setTimeout(gather,550);} else render();
+    if(full){state.level=(state.level||0)+1; save(); holding=true; render(); setTimeout(gather,550);} else render();
     const L=LETTERS.find(l=>l.at===state.today);
     if(L) setTimeout(()=>openLetter(L), full?1500:350);
   });
