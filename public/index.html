@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ميزان الاستغفار</title>
+<meta name="description" content="استغفر، وشوف الكفة المظلمة تخف وكفة النور تثقل. استغفر لنفسك ولوالديك ولمن تحب.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ميزان الاستغفار">
+<meta property="og:title" content="ميزان الاستغفار">
+<meta property="og:description" content="استغفر معانا واملا ميزانك، واستغفر لوالديك ولمن تحب.">
+<meta property="og:url" content="https://mezan-istighfar.hamadagamal1598.workers.dev/">
+<meta property="og:image" content="https://mezan-istighfar.hamadagamal1598.workers.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ar_EG">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0E2A2F">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
@@ -216,6 +228,17 @@ svg.scale.arrive{animation:arrive .8s ease}
 .govs .empty{font-size:13px;color:var(--muted);text-align:center;margin:0}
 .vault-special{padding:14px 14px 0}
 .vault-special .tile{max-width:160px;margin:0 auto}
+
+.ded{font-size:14px;margin:10px 0 0;padding:8px 14px;border-radius:12px;background:color-mix(in srgb,var(--brass) 14%,transparent);max-width:340px;line-height:1.7}
+.ded[hidden]{display:none}
+.ded b{color:var(--brass);font-weight:700}
+.refc{margin:22px 0 0;padding:16px;border:1px dashed var(--brass);border-radius:14px;width:100%;max-width:340px;text-align:center}
+.refc[hidden]{display:none}
+.refc b{display:block;font-size:16px;font-weight:600;margin-bottom:4px}
+.refc .big{font-size:15px;line-height:1.8;margin:4px 0 10px}
+.refc .big strong{color:var(--brass);font-size:20px}
+.refc .sub{display:block;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px}
+.refc .hd{font-family:'Amiri',serif;font-size:16px;color:var(--muted);margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -232,6 +255,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     <button class="chip" type="button" id="gF" aria-pressed="false">لها</button>
     <button class="solid" type="button" id="personShare" hidden>ابعت الرابط</button>
   </div>
+  <p class="ded" id="ded" hidden></p>
   <p class="src-note" id="modeNote" hidden></p>
 
   <p class="live" id="live" hidden><i class="dot" aria-hidden="true"></i><span>زوار الموقع استغفروا النهارده <b id="liveCount">٠</b> مرة</span></p>
@@ -314,6 +338,13 @@ svg.scale.arrive{animation:arrive .8s ease}
     </div>
   </section>
 
+  <section class="refc" id="refc" hidden>
+    <b>بسببك</b>
+    <p class="big" id="refText"></p>
+    <button class="solid" type="button" id="refShare">ابعت الموقع لحد</button>
+    <p class="hd">«من دلّ على خير فله مثل أجر فاعله» <small>رواه مسلم</small></p>
+  </section>
+
   <div class="chips" id="chips" role="group" aria-label="صيغة الاستغفار"></div>
 
   <p class="total" id="total"></p>
@@ -384,14 +415,19 @@ svg.scale.arrive{animation:arrive .8s ease}
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el=id=>document.getElementById(id);
 
-  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:''};
+  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:'',rid:'',refBy:null,refSent:false,ded:null,dedCounted:[]};
   try{const s=JSON.parse(localStorage.getItem('istighfar')||'null'); if(s) state=Object.assign(state,s);}catch(e){}
   try{
     const qs=new URLSearchParams(location.search);
     if(qs.get('c')) state.challenge=qs.get('c').replace(/[^a-z0-9]/gi,'').slice(0,20)||null;
-    if(qs.get('for')){state.mode='person';state.personName=qs.get('for').slice(0,30);state.personG=qs.get('g')==='f'?'f':'m';}
+    if(qs.get('for')){state.mode='person';state.personName=qs.get('for').slice(0,30);state.personG=qs.get('g')==='f'?'f':'m';state.ded=null;}
+    const dq=(qs.get('d')||'').replace(/[^a-z0-9]/gi,'').slice(0,20);
+    if(dq&&!(state.ded&&state.ded.code===dq)){state.mode='person';state.ded={code:dq,name:'',g:'m'};state.personName='';} else if(dq){state.mode='person';}
+    var refQ=(qs.get('r')||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,16);
   }catch(e){}
   if(state.date!==todayKey()){state.date=todayKey();state.today=0;}
+  if(!/^[a-z0-9]{6,16}$/.test(state.rid||'')) state.rid=Array.from({length:10},()=>'abcdefghijkmnpqrstuvwxyz23456789'[Math.floor(Math.random()*32)]).join('');
+  try{ if(typeof refQ!=='undefined'&&refQ&&refQ.length>=6&&refQ!==state.rid&&!state.refBy){state.refBy=refQ;state.refSent=false;} }catch(e){}
   const save=()=>{try{localStorage.setItem('istighfar',JSON.stringify(state));}catch(e){}};
 
   /* ---------- scale ---------- */
@@ -640,7 +676,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     if(state.today>=GOAL){note.textContent='أتممت مائة استغفارة اليوم، تقبّل الله منك';note.classList.add('done');}
     else{note.textContent=modeCopy().note+'، باقي '+fmt(GOAL-state.today)+' على المائة';note.classList.remove('done');}
     el('total').textContent='مجموع استغفارك على هذا الجهاز: '+fmt(state.total);
-    renderMode(); renderSky(); renderLetter(); renderMoon();
+    renderMode(); renderSky(); renderLetter(); renderMoon(); renderDed();
   }
 
   /* ---------- full scale → star rises ---------- */
@@ -736,11 +772,22 @@ svg.scale.arrive{animation:arrive .8s ease}
   MODES.forEach(m=>{const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.mode=m.id;b.textContent=m.label;
     b.onclick=()=>{state.mode=m.id;save();render();if(m.id==='person'&&!personLabel())el('personName').focus();};el('modes').appendChild(b);});
   el('personName').value=state.personName||'';
-  el('personName').addEventListener('input',e=>{state.personName=e.target.value.slice(0,30);save();render();});
-  el('gM').onclick=()=>{state.personG='m';save();render();};
-  el('gF').onclick=()=>{state.personG='f';save();render();};
-  el('personShare').onclick=()=>{const n=personLabel(); if(!n){el('personName').focus();return;}
-    share('استغفر لـ'+n, 'ادعي معايا لـ'+n+' بالمغفرة', baseUrl()+'?for='+encodeURIComponent(n)+'&g='+state.personG);};
+  el('personName').addEventListener('input',e=>{state.personName=e.target.value.slice(0,30); if(state.ded&&state.ded.name&&state.ded.name!==state.personName.trim()) state.ded=null; save();render();});
+  el('gM').onclick=()=>{state.personG='m'; if(state.ded&&state.ded.g!=='m') state.ded=null; save();render();};
+  el('gF').onclick=()=>{state.personG='f'; if(state.ded&&state.ded.g!=='f') state.ded=null; save();render();};
+  el('personShare').onclick=async()=>{const n=personLabel(); if(!n){el('personName').focus();return;}
+    const g=state.personG, him=g==='f'?'لها':'له';
+    const text='ادعي معايا لـ'+n+' بالمغفرة، كل استغفار بيتحسب '+him;
+    try{
+      if(!(state.ded&&state.ded.code&&state.ded.name===n&&state.ded.g===g)){
+        el('personShare').disabled=true;
+        const code=await rpc('create_dedication',{p_name:n,p_g:g});
+        state.ded={code,name:n,g}; save(); dedData={code,name:n,g,count:0,people:0}; renderDed();
+      }
+      share('استغفر لـ'+n, text, withRef(baseUrl()+'?d='+state.ded.code));
+    }catch(e){ share('استغفر لـ'+n, text, withRef(baseUrl()+'?for='+encodeURIComponent(n)+'&g='+g)); }
+    finally{ el('personShare').disabled=false; }
+  };
   function renderMode(){
     const c=modeCopy();
     el('intro').textContent=c.intro;
@@ -803,6 +850,12 @@ svg.scale.arrive{animation:arrive .8s ease}
     if(!r.ok) throw new Error('rpc '+r.status);
     const t=await r.text(); return t?JSON.parse(t):null;
   }
+  function withRef(url){return url+(url.includes('?')?'&':'?')+'r='+state.rid;}
+  async function getRow(table,col,val,sel){
+    const r=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+col+'=eq.'+encodeURIComponent(val)+'&select='+sel,{headers:H()});
+    if(!r.ok) throw new Error('get '+r.status);
+    const a=await r.json(); return a[0]||null;
+  }
   async function getChallenge(code){
     const r=await fetch(SUPABASE_URL+'/rest/v1/challenges?code=eq.'+encodeURIComponent(code)+'&select=code,name,goal,count',{headers:H()});
     if(!r.ok) throw new Error('get '+r.status);
@@ -817,13 +870,24 @@ svg.scale.arrive{animation:arrive .8s ease}
   const GOVNAME=Object.fromEntries(GOVS);
   let pending=0, inflightN=0, flushT=null, serverToday=null, chData=null, chMissing=false;
   let weekTotal=null, weekStart='', govCounts={}, lastRank=null, statsOK=false;
+  let v3=true, dedData=null, refData=null;
   function scheduleFlush(){ if(!online) return; clearTimeout(flushT); flushT=setTimeout(flush,2500); }
   async function flush(keep){
     if(!online||!pending||inflightN) return;
     const n=Math.min(pending,200); pending-=n; inflightN=n;
     const gov=state.gov||null;
     const body=statsOK?{p_n:n,p_code:state.challenge||null,p_gov:gov}:{p_n:n,p_code:state.challenge||null};
-    try{ await rpc('add_istighfar',body,keep);
+    const dedCode=(v3&&state.mode==='person'&&state.ded&&state.ded.code&&state.ded.name===personLabel())?state.ded.code:null;
+    const dedNew=!!dedCode&&!(state.dedCounted||[]).includes(dedCode);
+    const refNew=!!state.refBy&&!state.refSent;
+    if(v3&&dedCode){body.p_ded=dedCode;body.p_ded_new=dedNew;}
+    if(v3&&state.refBy){body.p_ref=state.refBy;body.p_ref_new=refNew;}
+    try{
+      try{ await rpc('add_istighfar',body,keep); }
+      catch(e){ if(body.p_ded||body.p_ref){ v3=false; delete body.p_ded; delete body.p_ded_new; delete body.p_ref; delete body.p_ref_new; await rpc('add_istighfar',body,keep); } else throw e; }
+      if(body.p_ded){ if(dedNew){state.dedCounted=(state.dedCounted||[]).concat(dedCode).slice(-50);} if(dedData&&dedData.code===dedCode){dedData.count=Number(dedData.count)+n; if(dedNew) dedData.people=Number(dedData.people)+1;} }
+      if(body.p_ref&&refNew) state.refSent=true;
+      if(body.p_ded||body.p_ref) save();
       if(serverToday!=null) serverToday+=n; if(chData) chData.count=Number(chData.count)+n;
       if(weekTotal!=null) weekTotal+=n; if(statsOK&&gov) govCounts[gov]=(govCounts[gov]||0)+n; }
     catch(e){ pending+=n; }
@@ -840,6 +904,11 @@ svg.scale.arrive{animation:arrive .8s ease}
       try{ serverToday=Number(await rpc('today_count')); }catch(e2){}
     }
     if(state.challenge){ try{ chData=await getChallenge(state.challenge); chMissing=!chData; }catch(e){} }
+    if(state.ded&&state.ded.code){ try{ const d=await getRow('dedications','code',state.ded.code,'code,name,g,count,people');
+        if(d){ dedData=d; if(!state.ded.name){state.ded={code:d.code,name:d.name,g:d.g}; state.personName=d.name; state.personG=d.g; el('personName').value=d.name; save(); render();} }
+        else if(!state.ded.name){ state.ded=null; save(); }
+      }catch(e){} }
+    try{ refData=await getRow('referrals','rid',state.rid,'people,count'); if(!refData) refData={people:0,count:0}; }catch(e){ refData=null; }
     renderShared();
   }
   function renderShared(){
@@ -856,8 +925,34 @@ svg.scale.arrive{animation:arrive .8s ease}
       el('chText').textContent= c>=g ? 'اكتمل التحدي ('+fmt(c)+' استغفارة)، تقبّل الله منكم' : fmt(c)+' من '+fmt(g)+'، باقي '+fmt(g-c);
     }
     if(state.challenge&&chMissing){state.challenge=null;chMissing=false;save();toast('التحدي ده مش موجود');}
-    renderGoal(); renderGovs();
+    renderGoal(); renderGovs(); renderDed(); renderRef();
   }
+  const personWord=n=>(n>=3&&n<=10)?'أشخاص':'شخص';
+  function renderDed(){
+    const box=el('ded');
+    const ok=online&&state.mode==='person'&&state.ded&&dedData&&dedData.code===state.ded.code&&state.ded.name===personLabel();
+    if(!ok){box.hidden=true;return;}
+    box.hidden=false;
+    const local=pending+inflightN, isNew=!(state.dedCounted||[]).includes(dedData.code);
+    const people=Number(dedData.people)+(local&&isNew?1:0), cnt=Number(dedData.count)+local;
+    box.innerHTML='';
+    const t=document.createElement('span');
+    t.append('استغفر لـ'+dedData.name+' ');
+    const b1=document.createElement('b'); b1.textContent=fmt(people); t.append(b1);
+    t.append(' '+personWord(people)+' حتى الآن · ');
+    const b2=document.createElement('b'); b2.textContent=fmt(cnt); t.append(b2,' استغفارة');
+    box.appendChild(t);
+  }
+  function renderRef(){
+    const box=el('refc'); if(!online||!refData){box.hidden=true;return;}
+    box.hidden=false;
+    const p=Number(refData.people), c=Number(refData.count), t=el('refText');
+    if(p>0){ t.innerHTML=''; const s1=document.createElement('strong'); s1.textContent=fmt(p);
+      const s2=document.createElement('strong'); s2.textContent=fmt(c);
+      t.append(s1,(p===1?' شخص دخل':' '+personWord(p)+' دخلوا')+' من لينكك واستغفروا ',s2,' مرة، ولك مثل أجرهم بإذن الله'); }
+    else t.textContent='ابعت الموقع لأهلك وصحابك، وكل حد يدخل من لينكك ويستغفر هيظهرلك هنا. الرقم ده بيظهرلك إنت بس.';
+  }
+  el('refShare').onclick=()=>share('ميزان الاستغفار','استغفر معايا واملا ميزانك، كل ما تستغفر الكفة المظلمة تخف وكفة النور تثقل',withRef(baseUrl()));
 
   /* ---------- weekly community goal ---------- */
   function renderGoal(){
@@ -911,11 +1006,11 @@ svg.scale.arrive{animation:arrive .8s ease}
     err.textContent=''; el('chCreate').disabled=true;
     try{ await flush(); const code=await rpc('create_challenge',{p_name:name,p_goal:goal});
       state.challenge=code; save(); chData={code,name,goal,count:0}; renderShared();
-      share('تحدي استغفار: '+name,'انضم لتحدي الاستغفار "'+name+'"، هدفنا '+fmt(goal)+' استغفارة',baseUrl()+'?c='+code);
+      share('تحدي استغفار: '+name,'انضم لتحدي الاستغفار "'+name+'"، هدفنا '+fmt(goal)+' استغفارة',withRef(baseUrl()+'?c='+code));
     }catch(e){ err.textContent='ما قدرناش نعمل التحدي، جرّب تاني'; }
     finally{ el('chCreate').disabled=false; }
   };
-  el('chShare').onclick=()=>{ if(!chData) return; share('تحدي استغفار: '+chData.name,'انضم لتحدي الاستغفار "'+chData.name+'"',baseUrl()+'?c='+chData.code); };
+  el('chShare').onclick=()=>{ if(!chData) return; share('تحدي استغفار: '+chData.name,'انضم لتحدي الاستغفار "'+chData.name+'"',withRef(baseUrl()+'?c='+chData.code)); };
   el('chLeave').onclick=async()=>{ if(!confirm('تخرج من التحدي؟')) return; await flush(); state.challenge=null; chData=null; save();
     el('chForm').hidden=true; el('chStart').hidden=false; renderShared(); };
   document.addEventListener('visibilitychange',()=>{ if(document.hidden) flush(true); else poll(); });
