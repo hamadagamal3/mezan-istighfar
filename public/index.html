@@ -16,6 +16,11 @@
 <meta property="og:locale" content="ar_EG">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0E2A2F">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ميزان الاستغفار">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
@@ -239,12 +244,70 @@ svg.scale.arrive{animation:arrive .8s ease}
 .refc .big strong{color:var(--brass);font-size:20px}
 .refc .sub{display:block;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px}
 .refc .hd{font-family:'Amiri',serif;font-size:16px;color:var(--muted);margin:10px 0 0}
+
+.daily{width:100%;max-width:380px;margin:14px 0 0;padding:12px 16px;border-radius:14px;background:color-mix(in srgb,var(--surface) 55%,transparent);text-align:center}
+.daily small{display:block;font-size:12px;color:var(--brass);font-weight:600;letter-spacing:0}
+.daily p{font-family:'Amiri',serif;font-size:19px;line-height:1.9;margin:4px 0 0}
+.daily cite{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:2px}
+.mapbtn{margin-top:4px}
+.daymap{margin:10px 0 0;width:100%;max-width:340px}
+.daymap[hidden]{display:none}
+.daymap .grid{display:grid;grid-template-rows:repeat(7,14px);grid-auto-flow:column;grid-auto-columns:14px;gap:3px;justify-content:center;overflow-x:auto;padding:4px 0}
+.daymap .grid i{border-radius:3px;background:var(--surface)}
+.daymap .grid i.l1{background:color-mix(in srgb,var(--brass) 35%,var(--surface))}
+.daymap .grid i.l2{background:color-mix(in srgb,var(--brass) 70%,var(--surface))}
+.daymap .grid i.l3{background:var(--brass)}
+.daymap .grid i.today{outline:2px solid var(--text);outline-offset:1px}
+.daymap .grid i.pad{visibility:hidden}
+.daymap .leg{display:flex;justify-content:center;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-top:6px}
+.daymap .leg i{display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--surface)}
+.daymap .sum{font-size:13px;color:var(--muted);text-align:center;margin:6px 0 0}
+.intent{font-size:14px;color:var(--muted);margin:10px 0 0;max-width:34ch;line-height:1.7}
+.intent b{color:var(--text);font-weight:500}
+.intent-form{display:flex;gap:8px;margin:10px 0 0;width:100%;max-width:340px}
+.intent-form[hidden]{display:none}
+.intent-form input{flex:1;max-width:none}
+.meaning{font-size:14px;color:var(--muted);line-height:1.8;margin:-6px 0 14px;max-width:32ch}
+.meaning[hidden]{display:none}
+.press-wrap{position:relative;display:flex;align-items:center;justify-content:center}
+.press-wrap .ring{position:absolute;inset:-14px;border-radius:50%;border:2px solid var(--brass);opacity:0;pointer-events:none}
+.press-wrap.presence .ring{opacity:.5;animation:breathe 8s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(.92);opacity:.25}50%{transform:scale(1.08);opacity:.6}}
+.press:disabled{opacity:.7;cursor:default}
+.offer{margin:18px 0 0;padding:14px 16px;border:1px solid var(--brass);border-radius:14px;max-width:340px;width:100%;background:color-mix(in srgb,var(--brass) 10%,transparent)}
+.offer[hidden]{display:none}
+.offer p{margin:0 0 10px;font-size:15px;line-height:1.7}
+.offer .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.settings{margin:22px 0 0;padding:16px;border:1px solid var(--surface);border-radius:14px;width:100%;max-width:340px;text-align:start}
+.settings > b{display:block;font-size:16px;font-weight:600;text-align:center;margin-bottom:10px}
+.settings .item{padding:10px 0;border-top:1px solid var(--surface)}
+.settings .item:first-of-type{border-top:none}
+.settings label,.settings .lbl{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.settings .hint{display:block;font-size:12px;color:var(--muted);line-height:1.6;margin-top:6px}
+.settings .hint[hidden]{display:none}
+.settings .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.settings select.field,.settings input.field{max-width:none;flex:1 1 120px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer}
+.switch input{width:44px;height:24px;appearance:none;-webkit-appearance:none;border-radius:12px;background:var(--surface);position:relative;cursor:pointer;flex:none;border:1px solid var(--brass)}
+.switch input::after{content:'';position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:var(--brass);transition:right .2s}
+.switch input:checked{background:color-mix(in srgb,var(--brass) 40%,transparent)}
+.switch input:checked::after{right:22px}
+.switch input:focus-visible{outline:3px solid var(--text);outline-offset:2px}
+.ghost{font:inherit;font-size:14px;font-weight:600;padding:8px 14px;border-radius:20px;border:1px solid var(--brass);background:transparent;color:var(--text);cursor:pointer}
+.ghost:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+.end .big{font-family:'Amiri',serif;font-size:30px;font-weight:700;margin:6px 0 4px}
+.end .sub{font-size:15px;line-height:1.8;margin:0 0 4px}
+.end .moonline{font-size:14px;color:var(--muted);margin:0 0 16px}
+.end .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+@media (prefers-reduced-motion: reduce){.press-wrap.presence .ring{animation:none}}
 </style>
 </head>
 <body>
 <main>
   <h1>ميزان الاستغفار</h1>
   <p class="intro" id="intro"></p>
+
+  <div class="daily" id="daily"><small>رسالة اليوم</small><p id="dailyText"></p><cite id="dailySrc"></cite></div>
 
   <div class="modes" id="modes" role="group" aria-label="تستغفر لمين">
     <span class="modes-label">تستغفر لمين؟</span>
@@ -268,6 +331,12 @@ svg.scale.arrive{animation:arrive .8s ease}
     <svg id="moon" viewBox="0 0 40 40" aria-hidden="true"><circle class="moon-base" cx="20" cy="20" r="17"/><path class="moon-lit" id="moonLit" d=""/></svg>
     <div><b id="moonTitle"></b><span id="moonText"></span></div>
   </div>
+  <button class="linkbtn mapbtn" type="button" id="mapBtn" aria-expanded="false">شوف خريطة أيامك</button>
+  <div class="daymap" id="daymap" hidden>
+    <div class="grid" id="mapGrid"></div>
+    <div class="leg"><span>أقل</span><i></i><i style="background:color-mix(in srgb,var(--brass) 35%,var(--surface))"></i><i style="background:color-mix(in srgb,var(--brass) 70%,var(--surface))"></i><i style="background:var(--brass)"></i><span>أكتر</span></div>
+    <p class="sum" id="mapSum"></p>
+  </div>
 
   <div class="sky" id="sky" aria-live="polite"></div>
 
@@ -282,12 +351,26 @@ svg.scale.arrive{animation:arrive .8s ease}
   </div>
   <p class="stage"><span id="stageText"></span><button class="linkbtn" type="button" id="vaultBtn">خزانة الموازين</button></p>
 
+  <p class="intent" id="intent"></p>
+  <div class="intent-form" id="intentForm" hidden>
+    <input class="field" id="intentInput" maxlength="80" placeholder="مثلًا: عن تقصيري في الصلاة" aria-label="نيتك النهارده">
+    <button class="solid" type="button" id="intentSave">احفظ</button>
+  </div>
+
   <p class="phrase" id="phrase"></p>
-  <button class="press" id="press" type="button">أستغفر الله</button>
+  <p class="meaning" id="meaning" hidden></p>
+  <div class="press-wrap" id="pressWrap"><span class="ring" aria-hidden="true"></span>
+    <button class="press" id="press" type="button">أستغفر الله</button>
+  </div>
 
   <p class="tally" aria-live="polite"><strong id="count">٠</strong><span>استغفارة اليوم</span></p>
   <div class="bar" aria-hidden="true"><span id="bar"></span></div>
   <p class="note" id="note"></p>
+
+  <div class="offer" id="offer" hidden>
+    <p id="offerText"></p>
+    <div class="row"><button class="solid" type="button" id="offerYes">يلا</button><button class="ghost" type="button" id="offerNo">خليه زي ما هو</button></div>
+  </div>
 
   <div class="letter" id="letter">
     <svg class="wax" viewBox="0 0 44 44" aria-hidden="true"><circle class="outer" cx="22" cy="22" r="20"/><circle class="inner" cx="22" cy="22" r="14"/><path d="M22 12 L24.5 19.5 L32 22 L24.5 24.5 L22 32 L19.5 24.5 L12 22 L19.5 19.5 Z"/></svg>
@@ -345,6 +428,31 @@ svg.scale.arrive{animation:arrive .8s ease}
     <p class="hd">«من دلّ على خير فله مثل أجر فاعله» <small>رواه مسلم</small></p>
   </section>
 
+  <section class="settings" id="settings">
+    <b>إعداداتك</b>
+    <div class="item">
+      <label for="wirdSel">وردك اليومي</label>
+      <select class="field" id="wirdSel"></select>
+      <span class="hint">ابدأ صغير وحافظ عليه، والموقع هيقترح عليك تزوده لما تتعود.</span>
+    </div>
+    <div class="item">
+      <label class="switch" for="presenceChk"><span class="lbl" style="margin:0">وضع الحضور</span><input type="checkbox" id="presenceChk"></label>
+      <span class="hint">استغفار بهدوء: يظهر معنى الصيغة، والزرار بيستنى لحظة بين كل مرة والتانية علشان تقولها بقلبك.</span>
+    </div>
+    <div class="item">
+      <span class="lbl">تذكير يومي</span>
+      <div class="row"><input class="field" type="time" id="remindTime" value="21:00" aria-label="وقت التذكير">
+        <button class="ghost" type="button" id="remGoogle">Google Calendar</button>
+        <button class="ghost" type="button" id="remIcs">تقويم الموبايل</button></div>
+      <span class="hint">بيضيف تذكير يومي في التقويم بتاعك، فيه لينك الموقع.</span>
+    </div>
+    <div class="item" id="installItem">
+      <span class="lbl">حطه على شاشة موبايلك</span>
+      <button class="ghost" type="button" id="installBtn" hidden>ثبّت الموقع كتطبيق</button>
+      <span class="hint" id="installHint"></span>
+    </div>
+  </section>
+
   <div class="chips" id="chips" role="group" aria-label="صيغة الاستغفار"></div>
 
   <p class="total" id="total"></p>
@@ -358,6 +466,15 @@ svg.scale.arrive{animation:arrive .8s ease}
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"/><path d="M9 10h6M9 13.5h4"/></svg>
   الدعم الفني
 </a>
+<div class="reveal" id="endv" hidden role="dialog" aria-modal="true" aria-labelledby="endTitle">
+  <div class="card end">
+    <p class="kicker">ورد النهارده خلص</p>
+    <p class="big" id="endTitle">تقبّل الله منك</p>
+    <p class="sub" id="endSub"></p>
+    <p class="moonline" id="endMoon"></p>
+    <div class="row"><button class="solid" type="button" id="endMore">كمّل الاستغفار</button><button class="ghost" type="button" id="endBye">نستناك بكرة</button></div>
+  </div>
+</div>
 <div class="vault" id="vault" hidden role="dialog" aria-modal="true" aria-labelledby="vaultTitle">
   <div class="vault-card">
     <div class="vault-head"><b id="vaultTitle">خزانة الموازين</b><span id="vaultCount"></span><button class="close-x" type="button" id="vaultClose" aria-label="إغلاق">×</button></div>
@@ -393,6 +510,41 @@ svg.scale.arrive{animation:arrive .8s ease}
     {label:'الحي القيوم', text:'أستغفر الله الذي لا إله إلا هو الحيّ القيوم وأتوب إليه'},
     {label:'سيد الاستغفار', long:true, text:'اللهم أنت ربي لا إله إلا أنت، خلقتني وأنا عبدك، وأنا على عهدك ووعدك ما استطعت، أعوذ بك من شر ما صنعت، أبوء لك بنعمتك عليّ، وأبوء بذنبي، فاغفر لي فإنه لا يغفر الذنوب إلا أنت'}
   ];
+  const DAILY=[
+    ['«إن العبد إذا أخطأ خطيئة نُكتت في قلبه نكتة سوداء، فإذا هو نزع واستغفر وتاب صُقل قلبه»','رواه الترمذي'],
+    ['﴿وَاسْتَغْفِرُوا رَبَّكُمْ ثُمَّ تُوبُوا إِلَيْهِ ۚ إِنَّ رَبِّي رَحِيمٌ وَدُودٌ﴾','سورة هود: ٩٠'],
+    ['«يا أيها الناس توبوا إلى الله، فإني أتوب في اليوم إليه مائة مرة»','رواه مسلم'],
+    ['﴿فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ ۚ إِنَّهُ كَانَ تَوَّابًا﴾','سورة النصر: ٣'],
+    ['«إن الله يبسط يده بالليل ليتوب مسيء النهار، ويبسط يده بالنهار ليتوب مسيء الليل»','رواه مسلم'],
+    ['﴿وَبِالْأَسْحَارِ هُمْ يَسْتَغْفِرُونَ﴾','سورة الذاريات: ١٨'],
+    ['«ينزل ربنا تبارك وتعالى كل ليلة إلى السماء الدنيا حين يبقى ثلث الليل الآخر، يقول: من يستغفرني فأغفر له»','متفق عليه'],
+    ['﴿وَمَن يَغْفِرُ الذُّنُوبَ إِلَّا اللَّهُ﴾','سورة آل عمران: ١٣٥'],
+    ['«كل ابن آدم خطّاء، وخير الخطّائين التوابون»','رواه الترمذي وابن ماجه'],
+    ['﴿يُمَتِّعْكُم مَّتَاعًا حَسَنًا إِلَىٰ أَجَلٍ مُّسَمًّى﴾ — ثمرة الاستغفار والتوبة','سورة هود: ٣'],
+    ['«والذي نفسي بيده لو لم تذنبوا لذهب الله بكم، ولجاء بقوم يذنبون فيستغفرون الله فيغفر لهم»','رواه مسلم'],
+    ['﴿وَيَزِدْكُمْ قُوَّةً إِلَىٰ قُوَّتِكُمْ﴾ — من وعد الله للمستغفرين','سورة هود: ٥٢'],
+    ['«يا ابن آدم، إنك ما دعوتني ورجوتني غفرت لك على ما كان فيك ولا أبالي»','رواه الترمذي'],
+    ['﴿وَالْمُسْتَغْفِرِينَ بِالْأَسْحَارِ﴾','سورة آل عمران: ١٧'],
+    ['«لَلّه أشد فرحًا بتوبة عبده حين يتوب إليه من أحدكم كان على راحلته بأرض فلاة فانفلتت منه... ثم وجدها»','رواه مسلم'],
+    ['﴿نَبِّئْ عِبَادِي أَنِّي أَنَا الْغَفُورُ الرَّحِيمُ﴾','سورة الحجر: ٤٩'],
+    ['«التائب من الذنب كمن لا ذنب له»','رواه ابن ماجه'],
+    ['﴿وَإِنِّي لَغَفَّارٌ لِّمَن تَابَ وَآمَنَ وَعَمِلَ صَالِحًا ثُمَّ اهْتَدَىٰ﴾','سورة طه: ٨٢'],
+    ['«من قالها من النهار موقنًا بها فمات من يومه قبل أن يمسي فهو من أهل الجنة» — عن سيد الاستغفار','رواه البخاري'],
+    ['﴿رَبَّنَا ظَلَمْنَا أَنفُسَنَا وَإِن لَّمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ﴾','سورة الأعراف: ٢٣'],
+    ['«ما من عبد مسلم يدعو لأخيه بظهر الغيب إلا قال الملك: ولك بمثل»','رواه مسلم'],
+    ['﴿رَّبِّ اغْفِرْ وَارْحَمْ وَأَنتَ خَيْرُ الرَّاحِمِينَ﴾','سورة المؤمنون: ١١٨'],
+    ['«من قال: أستغفر الله الذي لا إله إلا هو الحي القيوم وأتوب إليه، غُفر له وإن كان فرّ من الزحف»','رواه أبو داود والترمذي'],
+    ['﴿رَبِّ إِنِّي ظَلَمْتُ نَفْسِي فَاغْفِرْ لِي فَغَفَرَ لَهُ﴾','سورة القصص: ١٦'],
+    ['﴿وَسَارِعُوا إِلَىٰ مَغْفِرَةٍ مِّن رَّبِّكُمْ وَجَنَّةٍ عَرْضُهَا السَّمَاوَاتُ وَالْأَرْضُ﴾','سورة آل عمران: ١٣٣'],
+    ['﴿لَّا إِلَٰهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِينَ﴾','سورة الأنبياء: ٨٧'],
+    ['﴿وَاسْتَغْفِرِ اللَّهَ ۖ إِنَّ اللَّهَ كَانَ غَفُورًا رَّحِيمًا﴾','سورة النساء: ١٠٦'],
+    ['«والله إني لأستغفر الله وأتوب إليه في اليوم أكثر من سبعين مرة»','رواه البخاري']
+  ];
+  const WIRDS=[33,50,100,200,300,500,1000];
+  const MEAN={
+    self:['أطلب من الله أن يستر ذنبي ويتجاوز عنه.','أطلب المغفرة من الله العظيم، وأعزم أن أرجع إليه ولا أعود.','أتوسّل إليه باسمه الحي الذي لا يموت، القيوم القائم على كل شيء.','اعتراف بالعبودية وبنعمة الله وبالذنب، ثم طلب المغفرة ممن لا يغفر الذنوب غيره.'],
+    other:'دعاء لغيرك بالمغفرة، و«ما من عبد مسلم يدعو لأخيه بظهر الغيب إلا قال الملك: ولك بمثل».'
+  };
   const LETTERS=[
     {at:33, msg:'﴿فَقُلْتُ اسْتَغْفِرُوا رَبَّكُمْ إِنَّهُ كَانَ غَفَّارًا ۝ يُرْسِلِ السَّمَاءَ عَلَيْكُم مِّدْرَارًا﴾', src:'سورة نوح: ١٠–١١'},
     {at:70, msg:'«والله إني لأستغفر الله وأتوب إليه في اليوم أكثر من سبعين مرة»', src:'رواه البخاري'},
@@ -412,10 +564,12 @@ svg.scale.arrive{animation:arrive .8s ease}
   const keyOf=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
   const todayKey=()=>keyOf(new Date());
   const yesterdayKey=()=>{const d=new Date();d.setDate(d.getDate()-1);return keyOf(d);};
+  const daysAgoKey=n=>{const d=new Date();d.setDate(d.getDate()-n);return keyOf(d);};
+  const weekKey=(d=new Date())=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+1)%7));return keyOf(x);};
   const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el=id=>document.getElementById(id);
 
-  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:'',rid:'',refBy:null,refSent:false,ded:null,dedCounted:[]};
+  let state={date:todayKey(),today:0,total:0,idx:0,mode:'self',personName:'',personG:'m',streak:0,lastDay:'',challenge:null,level:0,gov:null,jamaa:false,goalSeen:'',rid:'',refBy:null,refSent:false,ded:null,dedCounted:[],wird:33,wirdStreak:0,lastWirdDay:'',wirdOfferDay:'',history:{},graceWeek:'',presence:false,intent:{date:'',text:''},endSeenDay:''};
   try{const s=JSON.parse(localStorage.getItem('istighfar')||'null'); if(s) state=Object.assign(state,s);}catch(e){}
   try{
     const qs=new URLSearchParams(location.search);
@@ -671,12 +825,13 @@ svg.scale.arrive{animation:arrive .8s ease}
     target=(light-dark)/N*MAXA;
     if(cur===null){cur=target;place(cur);} else if(!raf){raf=requestAnimationFrame(tick);}
     el('count').textContent=fmt(state.today);
-    el('bar').style.width=Math.min(100,state.today/GOAL*100)+'%';
+    const W=state.wird||33;
+    el('bar').style.width=Math.min(100,state.today/W*100)+'%';
     const note=el('note');
-    if(state.today>=GOAL){note.textContent='أتممت مائة استغفارة اليوم، تقبّل الله منك';note.classList.add('done');}
-    else{note.textContent=modeCopy().note+'، باقي '+fmt(GOAL-state.today)+' على المائة';note.classList.remove('done');}
+    if(state.today>=W){note.textContent='خلّصت وردك ('+fmt(W)+') النهارده، تقبّل الله منك';note.classList.add('done');}
+    else{note.textContent=modeCopy().note+'، باقي '+fmt(W-state.today)+' على وردك ('+fmt(W)+')';note.classList.remove('done');}
     el('total').textContent='مجموع استغفارك على هذا الجهاز: '+fmt(state.total);
-    renderMode(); renderSky(); renderLetter(); renderMoon(); renderDed();
+    renderMode(); renderSky(); renderLetter(); renderMoon(); renderDed(); renderIntent(); renderMeaning(); if(!el('daymap').hidden) renderMap();
   }
 
   /* ---------- full scale → star rises ---------- */
@@ -746,7 +901,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     setTimeout(()=>card.classList.add('opening'),500);
     setTimeout(()=>{card.classList.add('open');el('close').focus();},1400);
   }
-  function closeLetter(){el('reveal').hidden=true;el('press').focus();}
+  function closeLetter(){el('reveal').hidden=true;el('press').focus(); if(typeof endPending!=='undefined'&&endPending) setTimeout(openEnd,250);}
   el('close').addEventListener('click',closeLetter);
   el('reveal').addEventListener('click',e=>{if(e.target.id==='reveal'&&el('card').classList.contains('open'))closeLetter();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el('reveal').hidden)closeLetter();});
@@ -809,7 +964,9 @@ svg.scale.arrive{animation:arrive .8s ease}
 
   /* ---------- moon of days (streak) ---------- */
   const MOON_FULL=14;
-  function shownStreak(){return (state.lastDay===todayKey()||state.lastDay===yesterdayKey())?state.streak:0;}
+  const graceFree=()=>state.graceWeek!==weekKey();
+  const atRisk=()=>state.lastDay===daysAgoKey(2)&&graceFree();
+  function shownStreak(){return (state.lastDay===todayKey()||state.lastDay===yesterdayKey()||atRisk())?state.streak:0;}
   function moonPath(p,cx,cy,r){
     if(p>=0.999) return `M${cx} ${cy-r} A${r} ${r} 0 1 1 ${cx} ${cy+r} A${r} ${r} 0 1 1 ${cx} ${cy-r} Z`;
     const rx=(r*Math.abs(1-2*p)).toFixed(2), sw=p<0.5?0:1;
@@ -823,14 +980,127 @@ svg.scale.arrive{animation:arrive .8s ease}
     const t=el('moonTitle'), x=el('moonText');
     if(ds>=MOON_FULL){t.textContent='قمرك بدر';x.textContent=fmt(ds)+' يوم متتالي، حافظ عليه';}
     else if(!ds){t.textContent='قمر الأيام';x.textContent='استغفر كل يوم، والقمر يكبر لحد ما يبقى بدر';}
+    else if(!doneToday&&atRisk()){t.textContent='امبارح فاتك';x.textContent='بس عندك يوم سماح الأسبوع ده، استغفر النهارده وقمرك يكمل';}
     else if(!doneToday){t.textContent='قمرك مستنيك';x.textContent='استغفر النهارده علشان ما يرجعش هلال';}
     else{t.textContent=fmt(ds)+(ds===1?' يوم':' أيام متتالية');x.textContent='باقي '+fmt(MOON_FULL-ds)+' على البدر';}
   }
   function touchStreak(){
     const t=todayKey(); if(state.lastDay===t) return false;
-    state.streak=(state.lastDay===yesterdayKey())?(state.streak||0)+1:1;
+    if(state.lastDay===yesterdayKey()) state.streak=(state.streak||0)+1;
+    else if(atRisk()){ state.streak=(state.streak||0)+1; state.graceWeek=weekKey(); setTimeout(()=>toast('استخدمنا يوم السماح بتاع الأسبوع، وقمرك لسه منوّر'),400); }
+    else state.streak=1;
     state.lastDay=t; return true;
   }
+
+  /* ---------- daily message ---------- */
+  (function(){const d=new Date(),n=Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()))/86400000),m=DAILY[n%DAILY.length];
+    el('dailyText').textContent=m[0]; el('dailySrc').textContent=m[1];})();
+
+  /* ---------- days map ---------- */
+  function logHistory(){
+    state.history=state.history||{}; state.history[todayKey()]=state.today;
+    const ks=Object.keys(state.history); if(ks.length>130){ const cut=keyOf(new Date(Date.now()-125*86400000));
+      ks.forEach(k=>{const [y,mo,da]=k.split('-').map(Number); if(new Date(y,mo-1,da)<new Date(Date.now()-125*86400000)) delete state.history[k];}); }
+  }
+  function renderMap(){
+    const g=el('mapGrid'); g.innerHTML=''; const today=new Date(); today.setHours(0,0,0,0);
+    const start=new Date(today); start.setDate(start.getDate()-83); start.setDate(start.getDate()-((start.getDay()+1)%7));
+    const W=state.wird||33; let days=0,total=0;
+    for(const d=new Date(start); d<=today; d.setDate(d.getDate()+1)){
+      const k=keyOf(d), c=(state.history||{})[k]||0, i=document.createElement('i');
+      i.className=c>=W*2?'l3':c>=W?'l2':c>0?'l1':''; if(k===todayKey()) i.classList.add('today');
+      i.title=d.getDate()+'/'+(d.getMonth()+1)+': '+fmt(c); g.appendChild(i); if(c>0){days++;total+=c;}
+    }
+    el('mapSum').textContent='استغفرت '+fmt(days)+' يوم من آخر ١٢ أسبوع · '+fmt(total)+' استغفارة';
+  }
+  el('mapBtn').onclick=()=>{const m=el('daymap'),o=m.hidden; m.hidden=!o; el('mapBtn').setAttribute('aria-expanded',String(o));
+    el('mapBtn').textContent=o?'اخفي خريطة أيامك':'شوف خريطة أيامك'; if(o) renderMap();};
+
+  /* ---------- intention ---------- */
+  function renderIntent(){
+    const box=el('intent'); box.innerHTML='';
+    const has=state.intent&&state.intent.date===todayKey()&&state.intent.text;
+    if(has){ box.append('نيتك النهارده: '); const b=document.createElement('b'); b.textContent=state.intent.text; box.append(b,' ');
+      const e=document.createElement('button'); e.className='linkbtn'; e.type='button'; e.textContent='تعديل'; e.onclick=openIntent; box.append(e); }
+    else if(el('intentForm').hidden){ const e=document.createElement('button'); e.className='linkbtn'; e.type='button'; e.textContent='بتستغفر النهارده عن إيه؟ اكتب نيتك (بتفضل عندك بس)'; e.onclick=openIntent; box.append(e); }
+  }
+  function openIntent(){ el('intentForm').hidden=false; el('intentInput').value=(state.intent&&state.intent.date===todayKey())?state.intent.text:''; renderIntent(); el('intentInput').focus(); }
+  el('intentSave').onclick=()=>{ const v=el('intentInput').value.trim().slice(0,80); state.intent={date:todayKey(),text:v}; save(); el('intentForm').hidden=true; renderIntent(); };
+  el('intentInput').addEventListener('keydown',e=>{if(e.key==='Enter')el('intentSave').click();});
+
+  /* ---------- presence mode ---------- */
+  function renderMeaning(){
+    const m=el('meaning'); el('pressWrap').classList.toggle('presence',!!state.presence);
+    if(!state.presence){m.hidden=true;return;}
+    m.hidden=false; m.textContent= state.mode==='self' ? MEAN.self[state.idx]||MEAN.self[0] : MEAN.other;
+  }
+  el('presenceChk').checked=!!state.presence;
+  el('presenceChk').onchange=e=>{state.presence=e.target.checked; save(); render(); toast(state.presence?'وضع الحضور اتفعّل، خدها بهدوء':'وضع الحضور اتقفل');};
+
+  /* ---------- wird (daily target) that grows ---------- */
+  el('wirdSel').innerHTML=WIRDS.map(w=>`<option value="${w}">${fmt(w)} استغفارة</option>`).join('');
+  el('wirdSel').value=String(state.wird||33);
+  el('wirdSel').onchange=e=>{state.wird=Number(e.target.value); state.wirdStreak=0; save(); render(); renderOffer();};
+  function nextWird(){const i=WIRDS.indexOf(state.wird||33); return i>=0&&i<WIRDS.length-1?WIRDS[i+1]:null;}
+  function wirdDone(){
+    const t=todayKey(); if(state.lastWirdDay===t) return;
+    state.wirdStreak=(state.lastWirdDay===yesterdayKey())?(state.wirdStreak||0)+1:1; state.lastWirdDay=t; save();
+  }
+  function renderOffer(){
+    const nx=nextWird(), box=el('offer');
+    if(!nx||(state.wirdStreak||0)<7||state.wirdOfferDay===todayKey()||state.lastWirdDay!==todayKey()){box.hidden=true;return;}
+    el('offerText').textContent='ما شاء الله، حافظت على وردك ('+fmt(state.wird)+') '+fmt(state.wirdStreak)+((state.wirdStreak>=3&&state.wirdStreak<=10)?' أيام':' يوم')+' ورا بعض. تحب تخليه '+fmt(nx)+'؟';
+    box.hidden=false;
+  }
+  el('offerYes').onclick=()=>{const nx=nextWird(); if(nx){state.wird=nx; state.wirdStreak=0; state.wirdOfferDay=todayKey(); el('wirdSel').value=String(nx); save(); render(); toast('وردك بقى '+fmt(nx)+'، ربنا يعينك');} el('offer').hidden=true;};
+  el('offerNo').onclick=()=>{state.wirdStreak=0; state.wirdOfferDay=todayKey(); save(); el('offer').hidden=true;};
+
+  /* ---------- end of wird screen ---------- */
+  let endPending=false;
+  function openEnd(){
+    if(!el('reveal').hidden){endPending=true;return;}
+    endPending=false; state.endSeenDay=todayKey(); save();
+    el('endSub').textContent='خلّصت وردك: '+fmt(state.wird||33)+' استغفارة'+(state.mode==='self'?'':' ل'+(state.mode==='parents'?'والديك':state.mode==='believers'?'المؤمنين':personLabel()));
+    const ds=shownStreak(); el('endMoon').textContent=ds>1?'قمرك: '+fmt(ds)+' أيام متتالية'+(ds<MOON_FULL?'، باقي '+fmt(MOON_FULL-ds)+' على البدر':''):'ارجع بكرة وقمرك يبدأ يكبر';
+    el('endv').hidden=false; el('endMore').focus();
+  }
+  function closeEnd(){el('endv').hidden=true; el('press').focus(); renderOffer();}
+  el('endMore').onclick=closeEnd;
+  el('endBye').onclick=()=>{closeEnd(); toast('في أمان الله، نستناك بكرة');};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!el('endv').hidden)closeEnd();});
+
+  /* ---------- reminders (calendar) ---------- */
+  function remindParts(){
+    const [hh,mm]=(el('remindTime').value||'21:00').split(':').map(Number), d=new Date(); d.setDate(d.getDate()+(d.getHours()*60+d.getMinutes()>=hh*60+mm?1:0));
+    const p=n=>String(n).padStart(2,'0'), day=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());
+    const end=new Date(d); end.setHours(hh,mm+15);
+    return {start:day+'T'+p(hh)+p(mm)+'00', end:end.getFullYear()+p(end.getMonth()+1)+p(end.getDate())+'T'+p(end.getHours())+p(end.getMinutes())+'00'};
+  }
+  const REM_T='وقت الاستغفار – ميزان الاستغفار', REM_D='ميعاد وردك اليومي من الاستغفار: '+baseUrl();
+  el('remindTime').value=state.remindTime||'21:00';
+  el('remindTime').onchange=e=>{state.remindTime=e.target.value; save();};
+  el('remGoogle').onclick=()=>{const r=remindParts();
+    window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(REM_T)+'&details='+encodeURIComponent(REM_D)+'&dates='+r.start+'/'+r.end+'&recur='+encodeURIComponent('RRULE:FREQ=DAILY')+'&ctz=Africa/Cairo','_blank','noopener');};
+  el('remIcs').onclick=()=>{const r=remindParts();
+    const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//mezan-istighfar//AR','BEGIN:VEVENT','UID:mezan-'+state.rid+'@istighfar','DTSTAMP:'+r.start+'Z',
+      'DTSTART:'+r.start,'DTEND:'+r.end,'RRULE:FREQ=DAILY','SUMMARY:'+REM_T,'DESCRIPTION:'+REM_D,'URL:'+baseUrl(),
+      'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+REM_T,'TRIGGER:PT0M','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+    const a=document.createElement('a'); a.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics); a.download='mezan-istighfar-reminder.ics';
+    document.body.appendChild(a); a.click(); a.remove(); toast('افتح الملف اللي نزل علشان يتضاف لتقويمك');};
+
+  /* ---------- install as app ---------- */
+  let installEvt=null;
+  const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const iOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  function renderInstall(){
+    if(standalone){el('installItem').hidden=true;return;}
+    el('installBtn').hidden=!installEvt;
+    el('installHint').textContent= installEvt ? 'هيظهر كأيقونة على الشاشة وتفتحه بلمسة.' :
+      iOS ? 'من Safari: دوس زرار المشاركة ⬆️ وبعدين "إضافة إلى الشاشة الرئيسية".' : 'من قائمة المتصفح ⋮ اختار "إضافة إلى الشاشة الرئيسية" أو "تثبيت التطبيق".';
+  }
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(); installEvt=e; renderInstall();});
+  el('installBtn').onclick=async()=>{ if(!installEvt) return; installEvt.prompt(); try{await installEvt.userChoice;}catch(e){} installEvt=null; renderInstall(); };
+  renderInstall();
 
   /* ---------- sharing ---------- */
   function baseUrl(){return location.origin+location.pathname;}
@@ -1018,20 +1288,22 @@ svg.scale.arrive{animation:arrive .8s ease}
 
   el('press').addEventListener('click',()=>{
     if(state.date!==todayKey()){state.date=todayKey();state.today=0;shownStars=-1;}
+    if(state.presence){ const b=el('press'); b.disabled=true; setTimeout(()=>{b.disabled=false;},2200); }
     state.today++; state.total++;
-    const newDay=touchStreak(); save();
+    const newDay=touchStreak(); logHistory(); save();
     if(newDay&&!reduce){const m=el('moon');m.classList.remove('pop');void m.getBBox();m.classList.add('pop');}
     if(online){pending++; scheduleFlush(); renderShared();}
     const full=state.today%N===0;
     if(full){state.level=(state.level||0)+1; save(); holding=true; render(); setTimeout(gather,550);} else render();
     const L=LETTERS.find(l=>l.at===state.today);
     if(L) setTimeout(()=>openLetter(L), full?1500:350);
+    if(state.today>=(state.wird||33)){ wirdDone(); if(state.endSeenDay!==todayKey()) setTimeout(openEnd, L?(full?1600:450):(full?1700:400)); }
   });
   el('reset').addEventListener('click',()=>{
     if(confirm('تصفير عدّاد اليوم؟ المجموع الكلي هيفضل زي ما هو.')){state.today=0;pendingStars=0;save();render();}
   });
 
-  render();
+  render(); renderOffer();
   requestAnimationFrame(()=>requestAnimationFrame(()=>svg.classList.remove('noanim')));
 })();
 </script>
