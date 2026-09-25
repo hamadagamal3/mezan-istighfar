@@ -144,7 +144,8 @@ input.field{flex:1 1 150px;max-width:220px}
 .challenge b{display:block;font-size:16px;font-weight:600;margin-bottom:4px}
 .challenge .sub{display:block;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px}
 .challenge .form{display:flex;flex-direction:column;gap:8px}
-.challenge .form input.field{max-width:none}
+.challenge .form input.field{max-width:none;flex:none}
+.challenge .form[hidden],.challenge [hidden]{display:none}
 .challenge .bar{max-width:none;margin:10px 0 6px;height:8px}
 .challenge .row{display:flex;justify-content:center;gap:8px;margin-top:10px;flex-wrap:wrap}
 .err{color:#C0564B;font-size:13px;margin:4px 0 0;min-height:1em}
@@ -153,6 +154,12 @@ input.field{flex:1 1 150px;max-width:220px}
 .src-note{font-size:12px;color:var(--muted);margin:6px 0 0;max-width:34ch;line-height:1.7}
 .src-note[hidden],.chips[hidden]{display:none}
 @media (prefers-reduced-motion: reduce){.dot,.daybar svg.pop{animation:none}}
+.support{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:8px;
+  padding:10px 16px 10px 14px;border-radius:24px;background:var(--surface);color:var(--text);border:1px solid var(--brass);
+  font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.support svg{width:20px;height:20px;fill:none;stroke:var(--brass);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.support:focus-visible{outline:3px solid var(--text);outline-offset:3px}
+main{padding-bottom:90px}
 </style>
 </head>
 <body>
@@ -245,6 +252,10 @@ input.field{flex:1 1 150px;max-width:220px}
     <cite>رواه مسلم</cite></blockquote>
 </main>
 
+<a class="support" href="https://wa.me/201002427361?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%B9%D9%86%D8%AF%D9%8A%20%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%85%D9%88%D9%82%D8%B9%20%D9%85%D9%8A%D8%B2%D8%A7%D9%86%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D8%BA%D9%81%D8%A7%D8%B1" target="_blank" rel="noopener" aria-label="الدعم الفني على واتساب">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"/><path d="M9 10h6M9 13.5h4"/></svg>
+  الدعم الفني
+</a>
 <div class="toast" id="toast" role="status"></div>
 <div class="reveal" id="reveal" hidden role="dialog" aria-modal="true" aria-labelledby="revealKicker">
   <div class="card" id="card">
@@ -580,7 +591,6 @@ input.field{flex:1 1 150px;max-width:220px}
     if(full){holding=true; render(); setTimeout(gather,550);} else render();
     const L=LETTERS.find(l=>l.at===state.today);
     if(L) setTimeout(()=>openLetter(L), full?1500:350);
-    try{navigator.vibrate&&navigator.vibrate(full?[20,60,40]:12);}catch(e){}
   });
   el('reset').addEventListener('click',()=>{
     if(confirm('تصفير عدّاد اليوم؟ المجموع الكلي هيفضل زي ما هو.')){state.today=0;pendingStars=0;save();render();}
