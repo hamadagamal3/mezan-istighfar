@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>أنظمة Google Sheets مخصصة — محمد جمال</title>
+<meta name="description" content="نظام Google Sheets مصمم خصيصًا لمشروعك: مبيعات، مخزون، وحسابات في مكان واحد، من أول الفكرة لحد التسليم.">
+<meta name="theme-color" content="#0E2A2F">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4ECE8; --surface:#D3E0DB; --card:#F3F7F5; --brass:#A07A34; --brass-deep:#76592A;
+  --text:#15363B; --muted:#52706B; --btn-text:#FFF8E6;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0E2A2F; --surface:#163A40; --card:#143439; --brass:#C8A15A; --brass-deep:#8E6E33; --text:#ECE4D1; --muted:#95AEA9; --btn-text:#1A2F31; }
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans Arabic',system-ui,'Segoe UI',Tahoma,sans-serif;line-height:1.7;overflow-x:hidden}
+a{color:inherit}
+.wrap{max-width:640px;margin:0 auto;padding:22px 22px 60px}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);text-decoration:none}
+.back svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.hero{margin:34px 0 8px;text-align:center}
+.kicker{display:inline-block;font-size:13px;font-weight:600;color:var(--brass);background:color-mix(in srgb,var(--brass) 14%,transparent);padding:5px 14px;border-radius:20px;margin-bottom:14px}
+h1{font-family:'Amiri',serif;font-weight:700;font-size:34px;line-height:1.5;margin:0 0 14px}
+.lead{font-size:16px;color:var(--muted);max-width:44ch;margin:0 auto 26px;line-height:1.85}
+.cta{display:inline-flex;align-items:center;gap:10px;font:inherit;font-size:17px;font-weight:700;padding:14px 30px;border-radius:30px;border:none;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--brass) 65%,white) 0%, var(--brass) 55%, var(--brass-deep) 100%);
+  color:var(--btn-text);text-decoration:none;box-shadow:0 10px 24px color-mix(in srgb,var(--brass) 35%,transparent)}
+.cta svg{width:20px;height:20px;fill:currentColor}
+.subnote{display:block;font-size:12.5px;color:var(--muted);margin-top:10px}
+
+.hscale{width:180px;margin:0 auto 6px;opacity:.9}
+
+section{margin:56px 0}
+.h2{font-family:'Amiri',serif;font-size:24px;font-weight:700;text-align:center;margin:0 0 8px}
+.h2sub{text-align:center;color:var(--muted);font-size:14.5px;max-width:42ch;margin:0 auto 28px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:480px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--surface);border-radius:16px;padding:18px}
+.card .ic{width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--brass) 16%,transparent);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.card .ic svg{width:20px;height:20px;fill:none;stroke:var(--brass);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card b{display:block;font-size:15.5px;font-weight:700;margin-bottom:5px}
+.card p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.7}
+
+.steps{counter-reset:st;display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:16px;padding:18px 0;border-top:1px solid var(--surface)}
+.step:first-child{border-top:none}
+.step .num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--brass);color:var(--btn-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.step div b{display:block;font-size:15.5px;font-weight:700;margin-bottom:3px}
+.step div p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.75}
+
+.who{display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+.chip{font-size:13.5px;padding:8px 16px;border-radius:20px;border:1px solid var(--brass);color:var(--text);background:transparent}
+
+blockquote{margin:0;padding:22px 24px;border-radius:16px;background:var(--card);border:1px solid var(--surface);text-align:center;font-size:15px;color:var(--muted);line-height:1.85}
+blockquote b{display:block;color:var(--text);font-weight:700;margin-top:8px;font-size:14px}
+
+.finalcta{text-align:center;padding:36px 20px;border-radius:22px;background:linear-gradient(160deg,color-mix(in srgb,var(--brass) 16%,transparent),transparent)}
+.finalcta h3{font-family:'Amiri',serif;font-size:22px;margin:0 0 8px}
+.finalcta p{color:var(--muted);font-size:14px;margin:0 0 20px;max-width:38ch;margin-inline:auto}
+
+footer{text-align:center;margin-top:50px;font-size:12.5px;color:var(--muted)}
+footer a{color:var(--brass);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a class="back" href="./"><svg viewBox="0 0 24 24"><path d="M9 6l-6 6 6 6M4 12h16"/></svg>رجوع لميزان الاستغفار</a>
+
+  <div class="hero">
+    <svg class="hscale" viewBox="0 0 360 272"><rect x="176" y="60" width="8" height="186" rx="3" fill="#A07A34"/><path d="M130 262 Q180 236 230 262Z" fill="#76592A"/><rect x="118" y="258" width="124" height="8" rx="4" fill="#A07A34"/><g transform="translate(47.3 41.4)"><path d="M0 0 L-52 89 M0 0 L52 89" stroke="#A07A34" stroke-width="1.4"/><g fill="#4B505C"><circle cx="-14" cy="83" r="7"/><circle cx="0" cy="83" r="7"/><circle cx="14" cy="83" r="7"/></g><path d="M-56 90 Q0 120 56 90Z" fill="#A07A34"/></g><g transform="translate(312.7 41.4)"><path d="M0 0 L-52 89 M0 0 L52 89" stroke="#A07A34" stroke-width="1.4"/><g fill="#E6C77A"><circle cx="-21" cy="70" r="7"/><circle cx="-7" cy="70" r="7"/><circle cx="7" cy="70" r="7"/><circle cx="21" cy="70" r="7"/><circle cx="0" cy="57" r="7"/></g><path d="M-56 90 Q0 120 56 90Z" fill="#A07A34"/></g><g transform="rotate(-8 180 60)"><rect x="46" y="56" width="268" height="8" rx="4" fill="#A07A34"/><circle cx="180" cy="60" r="9" fill="#76592A"/></g></svg>
+    <p class="kicker">أنظمة Google Sheets مخصصة</p>
+    <h1>تعبت من الشيتات المعقدة<br>والحسابات اليدوية؟</h1>
+    <p class="lead">محمد جمال بيحوّل شيتاتك لنظام متكامل يدير مبيعاتك ومخزونك وحساباتك في مكان واحد، مصمم خصيصًا لمشروعك من أول الفكرة لحد التسليم.</p>
+    <a class="cta" href="https://wa.me/201002427361?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B3%D8%A3%D9%84%20%D8%B9%D9%86%20%D9%86%D8%B8%D8%A7%D9%85%20Google%20Sheets%20%D9%84%D9%85%D8%B4%D8%B1%D9%88%D8%B9%D9%8A" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-5-4.3-5.1-4.5-.1-.2-1.2-1.6-1.2-3.1s.8-2.2 1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .5 0 .7.5.3.7.9 2.2 1 2.4.1.2.1.4 0 .6-.2.4-.3.6-.5.9-.2.2-.5.5-.2.9.3.5 1.2 1.9 2.5 3 1.7 1.5 3.1 2 3.6 2.2.4.2.6.1.8-.1.2-.3.9-1 1.1-1.4.2-.4.4-.3.7-.2.3.1 1.9.9 2.2 1.1.3.1.5.2.6.3.1.2.1 1-.1 1.6z"/></svg>
+      تواصل معايا على واتساب
+    </a>
+    <span class="subnote">هترد عليك بنفسي، ونتكلم في تفاصيل مشروعك</span>
+  </div>
+
+  <section>
+    <p class="h2">إيه اللي بتاخده</p>
+    <p class="h2sub">نظام واحد يجمّع شغلك، بدل شيتات متفرقة صعب تتابعها</p>
+    <div class="grid">
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg></span><b>مبيعات ومشتريات</b><p>تسجيل الفواتير والعملاء والموردين، وحساب الأرباح تلقائيًا.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4"/></svg></span><b>تتبع المخزون</b><p>تعرف اللي داخل وخارج أول بأول، ومتى تحتاج تجدّد الطلب.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span><b>حسابات ومصروفات</b><p>خزينة منظمة، وحسابات عامة تفصلها براحتك حسب طبيعة شغلك.</p></div>
+      <div class="card"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V9M11 19V5M18 19v-7"/></svg></span><b>تقارير جاهزة</b><p>أرقام مشروعك تشوفها بضغطة، من غير ما تجمّعها يدوي.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="h2">إزاي بيتم الشغل</p>
+    <div class="steps">
+      <div class="step"><span class="num">١</span><div><b>تبعتلي تفاصيل مشروعك</b><p>نوع شغلك، وإيه اللي بتحتاج تديره: مبيعات، مخزون، حسابات، ولا الثلاثة مع بعض.</p></div></div>
+      <div class="step"><span class="num">٢</span><div><b>نتفق على الشكل</b><p>نحدد المميزات اللي هتفيدك فعلًا، بعيد عن أي تعقيد مش محتاجه.</p></div></div>
+      <div class="step"><span class="num">٣</span><div><b>أبنيلك النظام</b><p>بشتغل على نظامك وأديك تحديثات أول بأول لحد ما يوصل للشكل النهائي.</p></div></div>
+      <div class="step"><span class="num">٤</span><div><b>تسليم وتدريب</b><p>تسليم كامل مع شرح ليك أو لفريقك إزاي تستخدم النظام براحة.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="h2">يناسب أي نوع مشروع</p>
+    <div class="who">
+      <span class="chip">محلات ومتاجر</span>
+      <span class="chip">مقاولات</span>
+      <span class="chip">نقل ومواصلات</span>
+      <span class="chip">محاسبة عامة</span>
+      <span class="chip">خدمات وصيانة</span>
+      <span class="chip">مشاريع صغيرة وناشئة</span>
+    </div>
+  </section>
+
+  <section>
+    <blockquote>«الوقت اللي بتضيّعه في تجميع الأرقام يدويًا، ممكن تصرفه في تكبير مشروعك بدل ما تقعد وراه»<b>محمد جمال</b></blockquote>
+  </section>
+
+  <section class="finalcta">
+    <h3>جاهز تبدأ؟</h3>
+    <p>ابعتلي تفاصيل مشروعك على واتساب، ونشوف مع بعض إيه اللي يناسبك</p>
+    <a class="cta" href="https://wa.me/201002427361?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%B9%D8%A7%D9%8A%D8%B2%20%D8%A3%D8%B3%D8%A3%D9%84%20%D8%B9%D9%86%20%D9%86%D8%B8%D8%A7%D9%85%20Google%20Sheets%20%D9%84%D9%85%D8%B4%D8%B1%D9%88%D8%B9%D9%8A" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm5.7 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.1.1-1.8-.1-.4-.1-1-.3-1.7-.6-3-1.3-5-4.3-5.1-4.5-.1-.2-1.2-1.6-1.2-3.1s.8-2.2 1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .5 0 .7.5.3.7.9 2.2 1 2.4.1.2.1.4 0 .6-.2.4-.3.6-.5.9-.2.2-.5.5-.2.9.3.5 1.2 1.9 2.5 3 1.7 1.5 3.1 2 3.6 2.2.4.2.6.1.8-.1.2-.3.9-1 1.1-1.4.2-.4.4-.3.7-.2.3.1 1.9.9 2.2 1.1.3.1.5.2.6.3.1.2.1 1-.1 1.6z"/></svg>
+      تواصل معايا على واتساب
+    </a>
+  </section>
+
+  <footer>جالك من <a href="./">ميزان الاستغفار</a></footer>
+</main>
+</body>
+</html>
