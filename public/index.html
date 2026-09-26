@@ -359,6 +359,36 @@ svg.scale.arrive{animation:arrive .8s ease}
 .mech.fadeout{opacity:0;transform:scale(.94);transition:opacity .4s ease,transform .4s ease}
 .mech.arrive{animation:arrive .8s ease}
 @media (prefers-reduced-motion: reduce){.mech.tap,.mech.arrive{animation:none}}
+
+.mech{--t:0}
+.mech [class]{transform-box:fill-box;transform-origin:center}
+.mech .flick{animation:flick 1.4s ease-in-out infinite;transform-origin:50% 100%;animation-delay:calc(var(--t)*-1s)}
+@keyframes flick{0%,100%{transform:scale(1,1) skewX(0)}25%{transform:scale(.92,1.08) skewX(3deg)}50%{transform:scale(1.05,.95) skewX(-3deg)}75%{transform:scale(.96,1.05) skewX(1.5deg)}}
+.mech .twk{animation:twk 2.4s ease-in-out infinite}
+@keyframes twk{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+.mech .drift{animation:drift 9s ease-in-out infinite alternate;animation-delay:calc(var(--t)*-1s)}
+@keyframes drift{from{transform:translateX(-7px)}to{transform:translateX(7px)}}
+.mech .bob{animation:bob 2.6s ease-in-out infinite;animation-delay:calc(var(--t)*-1s)}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-3px) rotate(3deg)}}
+.mech .sway{animation:sway 5s ease-in-out infinite;transform-origin:50% 100%;animation-delay:calc(var(--t)*-1s)}
+@keyframes sway{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.6deg)}}
+.mech .float{animation:float 4.5s ease-in-out infinite;animation-delay:calc(var(--t)*-1s)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.mech .pulseG{animation:pulseG 3.2s ease-in-out infinite;animation-delay:calc(var(--t)*-1s)}
+@keyframes pulseG{0%,100%{opacity:.85}50%{opacity:1}}
+.mech .shim{animation:shim 2.2s linear infinite;animation-delay:calc(var(--t)*-1s)}
+@keyframes shim{to{stroke-dashoffset:-40}}
+.mech .fall{animation:fall .8s linear infinite}
+@keyframes fall{from{transform:translateY(-10px);opacity:0}30%{opacity:1}to{transform:translateY(34px);opacity:0}}
+.mech .flap{animation:flap .28s ease-in-out infinite alternate;transform-origin:100% 50%}
+@keyframes flap{from{transform:rotate(-18deg)}to{transform:rotate(22deg)}}
+.mech .spin{animation:spin 60s linear infinite;animation-delay:calc(var(--t)*-1s)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pt{animation:pt .75s ease-out forwards;transform-box:fill-box;transform-origin:center}
+@keyframes pt{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.ring{animation:ring .8s ease-out forwards;transform-box:fill-box;transform-origin:center}
+@keyframes ring{from{transform:scale(.3);opacity:.9}to{transform:scale(4);opacity:0}}
+@media (prefers-reduced-motion: reduce){.mech [class]{animation:none!important}.pt,.ring{display:none}}
 </style>
 </head>
 <body>
@@ -408,6 +438,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   <div class="scale-wrap">
     <div class="scene" id="scene" aria-hidden="true"></div>
     <svg class="scale noanim" id="scale" viewBox="0 0 360 272" aria-hidden="true">
+      <defs id="sdefs"></defs>
       <g id="static"></g>
       <g id="panL"></g>
       <g id="panR"></g>
@@ -839,9 +870,10 @@ svg.scale.arrive{animation:arrive .8s ease}
     case 'rods':return `<path d="${L}" stroke="${m}" stroke-width="3.2" stroke-linecap="round" fill="none"/>`;
     default:return `<path d="${L}" stroke="${m}" stroke-width="1.4" fill="none" opacity=".85"/>`;}}
   function stoneMarkup(t,cls,i){const [x,y]=slots[i],bad=cls==='bad';
-    return `<g transform="translate(${x} ${y})"><g class="st ${cls}" style="fill:${bad?t.bc:t.gc};stroke:${bad?t.be:t.ge};stroke-width:1">${SH[bad?t.bs:t.gs]}</g></g>`;}
+    return `<g transform="translate(${x} ${y})"><g class="st ${cls}" style="fill:${bad?t.bc:t.gc};stroke:${bad?t.be:t.ge};stroke-width:1">${SH[bad?t.bs:t.gs]}<ellipse cx="-2.3" cy="-3" rx="2.6" ry="1.7" fill="#fff" stroke="none" opacity="${bad?.22:.55}"/></g></g>`;}
   function panInner(t,cls,count){return stringsSVG(t)+'<g class="stones">'+slots.slice(0,count).map((_,i)=>stoneMarkup(t,cls,i)).join('')+'</g>'+panSVG(t)+`<circle r="3" fill="${t.d}"/>`;}
-  function buildPan(g,t,cls){g.innerHTML=panInner(t,cls,N);const stones=g.querySelector('.stones');return {stones,list:[...stones.querySelectorAll('.st')]};}
+  function gradz(str,t){return str.split(`fill="${t.m}"`).join('fill="url(#sgM)"').split(`fill="${t.d}"`).join('fill="url(#sgD)"').split(`stroke="${t.m}"`).join('stroke="url(#sgMh)"');}
+  function buildPan(g,t,cls){g.innerHTML=gradz(panInner(t,cls,N),t);const stones=g.querySelector('.stones');return {stones,list:[...stones.querySelectorAll('.st')]};}
   function miniSVG(t){return `<svg viewBox="0 -4 360 276" aria-hidden="true">${postSVG(t)}${baseSVG(t)}<g transform="translate(46 60)">${panInner(t,'bad',5)}</g><g transform="translate(314 60)">${panInner(t,'good',5)}</g>${beamSVG(t)}${topSVG(t)}</svg>`;}
 
   const svg=el('scale'), panL=el('panL'), panR=el('panR'), beam=el('beam'), staticG=el('static');
@@ -939,168 +971,259 @@ svg.scale.arrive{animation:arrive .8s ease}
   }
   el('worldGo').onclick=()=>{el('worldv').hidden=true; el('press').focus();};
 
-  /* ---------- stage mechanics: a different visual for each stage ---------- */
+  /* ---------- stage mechanics (rich graphics): a different visual for each stage ---------- */
   const ACC=['#C8913A','#6E9F4E','#2F86B5','#7C8BA0','#D9826A','#E0A93A','#C8663E','#8FA6E0','#E9B45A','#B9A6FF'];
   const LUM='#FFF4CF';
   const cl=(v)=>Math.max(0,Math.min(1,v));
   const seeded=(n,seed,fx)=>{const R=rng(seed);return Array.from({length:n},()=>fx(R));};
-  const glowF=`<filter id="mg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>`;
-  const halo=(x,y,r,c,op)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity="${op.toFixed(2)}" filter="url(#mg)"/>`;
-  const sparkle=(x,y,s,op)=>`<path d="${starPath(4,s,s*0.28,x,y)}" fill="${LUM}" opacity="${op.toFixed(2)}"/>`;
+  function shade(hex,amt){const n=parseInt(hex.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;const t=amt<0?0:255,a=Math.abs(amt);
+    r=Math.round(r+(t-r)*a);g=Math.round(g+(t-g)*a);b=Math.round(b+(t-b)*a);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+  const lg=(id,c,x2=0,y2=1)=>`<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">${c.map((s,i)=>`<stop offset="${(i/(c.length-1)).toFixed(2)}" stop-color="${s}"/>`).join('')}</linearGradient>`;
+  const rg=(id,c,cx=.5,cy=.5,r=.5)=>`<radialGradient id="${id}" cx="${cx}" cy="${cy}" r="${r}">${c.map((s,i)=>{const [col,op]=s.split('@');return `<stop offset="${(i/(c.length-1)).toFixed(2)}" stop-color="${col}"${op?` stop-opacity="${op}"`:''}/>`;}).join('')}</radialGradient>`;
+  function DEFS(A){return `<defs>
+    <filter id="mg" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="mg2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.6"/></filter>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".28"/></filter>
+    ${lg('gM',[shade(A,.45),A,shade(A,-.35)])}${lg('gMh',[shade(A,.35),A,shade(A,-.3)],1,0)}
+    ${lg('gGold',['#FFF0B8','#E6B24A','#9A6B12'])}${lg('gWood',['#B07A48','#7A4E2A','#4E3018'],1,0)}
+    ${lg('gPaper',['#FFFDF6','#F3E7C9','#E2D0A6'])}${lg('gWater',['#9FE0F5','#3E9CC8','#1F5F86'])}${lg('gMurk',['#9A8458','#6B5638','#4A3A24'])}
+    ${lg('gLeaf',['#A8E07A','#5FA84A','#2F6A2A'])}${lg('gCloudD',['#7A8294','#4A5060','#353A46'])}${lg('gCloudL',['#FFFFFF','#E4ECF3'])}
+    ${rg('gGlow',['#FFFFFF@.95','#FFF4CF@.55','#FFF4CF@0'])}${rg('gWarm',['#FFF6D6@1','#FFD27A@.6','#FFB347@0'])}
+    ${rg('gFlame',['#FFFFF0','#FFE27A','#FF9A3C','#E0561E'],.5,.75,.6)}
+    ${rg('gHeart',['#FFE0E8','#F07C96','#B03A58'],.35,.3,.8)}${rg('gHeartD',['#8A5A68','#4E2A36','#2A141C'],.35,.3,.8)}
+    ${rg('gStone',['#7A808C','#4B505C','#23262E'],.35,.3,.75)}${rg('gPearl',['#FFFFFF','#FBEFC8','#D8BD78'],.35,.3,.75)}
+    ${rg('gBead',['#FFF6C8','#F2C94A','#A87A14'],.35,.3,.75)}${rg('gBeadD',['#8A7460','#4E3E30','#2A2018'],.35,.3,.75)}
+    ${rg('gRose',['#FF9AAE','#E0485E','#8E1F34'],.5,.9,.9)}${rg('gFruit',['#FFB0A8','#E0485E','#8E1F34'],.35,.3,.75)}
+    ${rg('gSun',['#FFFFF2','#FFE8A0','#FFC45A'],.4,.35,.7)}${rg('gMoon',['#FFFDF0','#F4E6B0','#D6C47E'],.35,.35,.75)}
+    ${lg('gMount',['#A9B6C6','#7C8BA0','#55637A'])}${lg('gSea',['#3E8FC0','#1F5F86','#143F5E'])}${lg('gSoil',['#B08A5A','#7A5A3A','#4E3820'])}
+    ${lg('gSteel',['#C9D0D8','#8A929C','#4E555E'])}${lg('gCandle',['#FFFFFF','#F6EEDC','#DCCFB2'],1,0)}${lg('gGlassPane',['#FFE9A8','#FFC857','#E0902A'])}
+  </defs>`;}
+  const halo=(x,y,r,op,g='gGlow')=>op>0.01?`<circle cx="${x}" cy="${y}" r="${r}" fill="url(#${g})" opacity="${op.toFixed(2)}" class="pulseG"/>`:'';
+  const sparkle=(x,y,s,op,dl=0)=>`<path d="${starPath(4,s,s*0.26,x,y)}" fill="${LUM}" opacity="${op.toFixed(2)}" class="twk" style="animation-delay:calc(var(--t,0)*-1s + ${dl}s)"/>`;
+  const cloudG=(x,y,s,fill,op,cls='')=>`<g transform="translate(${x} ${y}) scale(${s})" opacity="${op.toFixed(2)}"><g class="${cls}" fill="${fill}"><ellipse cx="0" cy="4" rx="30" ry="11"/><ellipse cx="-15" cy="-4" rx="15" ry="12"/><ellipse cx="9" cy="-9" rx="17" ry="15"/><ellipse cx="22" cy="0" rx="11" ry="9"/></g></g>`;
+  const shadowE=(x,y,rx,op=.25)=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${(rx*0.18).toFixed(1)}" fill="#000" opacity="${op}" filter="url(#mg2)"/>`;
+  const dl=i=>`style="animation-delay:calc(var(--t,0)*-1s + ${(i*0.37%3).toFixed(2)}s)"`;
+
   const MECH={
     scale:{n:'الميزان',h:'كل استغفار بيخفف الكفة المظلمة'},
-    heart:{n:'القلب',h:'«إذا استغفر صُقل قلبه»، كل استغفار بيمسح نقطة',d(p,A){
-      const pts=[[150,122],[168,112],[193,112],[212,122],[140,142],[161,135],[184,131],[207,137],[224,146],[153,160],[176,154],[199,160],[166,178],[190,177],[180,195],[146,130]];
-      const left=16*(1-p), full=Math.floor(left), fr=left-full;
-      const heart='M180 212 C92 152 108 70 180 106 C252 70 268 152 180 212Z';
-      const col=p<1?`rgb(${Math.round(90+150*p)},${Math.round(52+110*p)},${Math.round(64+120*p)})`:'#F6B3C2';
-      return `${halo(180,140,70,'#FFD7E0',p*0.8)}<path d="${heart}" fill="${col}" stroke="#3A2230" stroke-width="3"/>`+
-        pts.map((q,i)=>i<full?`<circle cx="${q[0]}" cy="${q[1]}" r="7" fill="#1E1418"/>`:i===full&&fr>0?`<circle cx="${q[0]}" cy="${q[1]}" r="7" fill="#1E1418" opacity="${fr.toFixed(2)}"/>`:'').join('')+
-        `<path d="M150 118 Q160 104 176 110" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" opacity="${(0.2+0.6*p).toFixed(2)}"/>`+(p>=1?sparkle(236,98,10,1)+sparkle(122,120,7,.9):'');}},
-    page:{n:'الصحيفة',h:'كل استغفار بيمسح بقعة حبر ويكتب سطر نور',d(p,A){
-      const blots=seeded(12,77,R=>[125+R()*110,70+R()*135,6+R()*9]); const left=Math.ceil(12*(1-p)-1e-9);
-      let lines=''; for(let i=0;i<8;i++){const lp=cl(p*8-i); if(lp>0) lines+=`<rect x="${238-110*lp}" y="${78+i*18}" width="${110*lp}" height="5" rx="2.5" fill="${A}" opacity=".85"/>`;}
-      return `${halo(180,140,90,LUM,p*0.6)}<g transform="rotate(-3 180 140)"><rect x="112" y="56" width="136" height="168" rx="6" fill="#F7F1E1" stroke="#B9A37A" stroke-width="2"/>${lines}`+
-        blots.map((b,i)=>i<left?`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[2]*0.8}" fill="#23262E"/>`:'').join('')+`</g>`;}},
-    clouds:{n:'السحاب',h:'كل استغفار بيبعّد سحابة لحد ما النور يبان',d(p){
-      const cs=[[130,110,1.3,-1],[230,105,1.4,1],[180,150,1.6,1],[110,165,1.2,-1],[250,160,1.3,1],[175,95,1.1,-1]];
-      let rays=''; if(p>.5) for(let i=0;i<12;i++){const a=i*Math.PI/6; rays+=`<path d="M${180+50*Math.cos(a)} ${130+50*Math.sin(a)} L${180+90*Math.cos(a)} ${130+90*Math.sin(a)}" stroke="${LUM}" stroke-width="4" stroke-linecap="round" opacity="${((p-.5)*1.6).toFixed(2)}"/>`;}
-      return halo(180,130,80,LUM,p)+rays+`<circle cx="180" cy="130" r="40" fill="#FFE39A" opacity="${(0.35+0.65*p).toFixed(2)}"/>`+
-        cs.map((c,i)=>{const t=cl(p*6-i*0.8); return cloud(c[0]+c[3]*t*230,c[1],c[2],'#4A505C',(1-t)*0.95);}).join('');}},
-    lamp:{n:'القنديل',h:'كل استغفار نقطة زيت لحد ما القنديل ينوّر',d(p,A){
-      const lvl=196-90*p;
-      return `<defs><clipPath id="mc"><circle cx="180" cy="150" r="46"/></clipPath></defs>${halo(180,120,90,'#FFD27A',p*0.9)}
-        <path d="M180 20 V70" stroke="${A}" stroke-width="3"/><path d="M160 70 H200 L192 96 H168Z" fill="${A}"/>
-        <circle cx="180" cy="150" r="46" fill="#E9F3F5" opacity=".55" stroke="${A}" stroke-width="3"/>
-        <rect x="130" y="${lvl}" width="100" height="120" fill="#E0A93A" clip-path="url(#mc)" opacity=".9"/>
-        <path d="M168 196 H192 L200 214 H160Z" fill="${A}"/>`+(p>.05?`<path d="M180 ${122-40*p} C${188+6*p} ${132-20*p} ${190} 132 180 138 C170 132 ${172-6*p} ${132-20*p} 180 ${122-40*p}Z" fill="#FFB347" opacity="${cl(p*1.5).toFixed(2)}"/>`:'');}},
-    water:{n:'المية',h:'كل استغفار بيصفّي المية لحد ما القاع يبان',d(p){
-      const peb=seeded(9,5,R=>[100+R()*160,185+R()*25,5+R()*6]);
-      return `<ellipse cx="180" cy="180" rx="130" ry="50" fill="#5FB8D6"/>`+peb.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[2]*.6}" fill="#C9B89A"/>`).join('')+
-        `<path d="M150 170 q10 -8 20 0 q-10 8 -20 0 l-8 -5 v10z" fill="#F29A4A" opacity="${cl(p*1.4-.2).toFixed(2)}"/><path d="M220 190 q9 -7 18 0 q-9 7 -18 0 l-7 -4 v8z" fill="#F2C94A" opacity="${cl(p*1.4-.4).toFixed(2)}"/>
-        <ellipse cx="180" cy="180" rx="130" ry="50" fill="#6B5A3E" opacity="${(0.92*(1-p)).toFixed(2)}"/>
-        <path d="M80 168 Q180 150 280 168" stroke="#fff" stroke-width="3" fill="none" opacity="${(0.2+0.6*p).toFixed(2)}"/>`;}},
-    window:{n:'الشباك',h:'كل استغفار بيفتح الشباك شوية للنور',d(p,A){
-      const w=60*(1-p);
-      let rays=''; for(let i=0;i<5;i++) rays+=`<path d="M${150+i*15} 210 L${120+i*30} 262" stroke="${LUM}" stroke-width="10" opacity="${(p*0.35).toFixed(2)}"/>`;
-      return `<path d="M120 210 V110 Q120 50 180 50 Q240 50 240 110 V210Z" fill="#FFE9A8"/>${halo(180,120,50,'#fff',p)}<circle cx="180" cy="120" r="22" fill="#FFF6D6" opacity="${p.toFixed(2)}"/>${rays}
-        <rect x="120" y="60" width="${w}" height="150" fill="#6B4A2E" stroke="#3F2A18"/><rect x="${240-w}" y="60" width="${w}" height="150" fill="#6B4A2E" stroke="#3F2A18"/>
-        <path d="M120 210 V110 Q120 50 180 50 Q240 50 240 110 V210Z" fill="none" stroke="${A}" stroke-width="8"/><rect x="110" y="208" width="140" height="10" rx="3" fill="${A}"/>`;}},
-    seed:{n:'البذرة',h:'كل استغفار بيسقي البذرة لحد ما تبقى شجرة',d(p){
-      const h=10+140*p, top=222-h; let lv='';
-      for(let i=0;i<Math.floor(p*8);i++){const y=210-i*16, s=i%2?1:-1; if(y>top+10) lv+=`<path d="M180 ${y} q${22*s} -14 ${36*s} -4 q${-14*s} 12 ${-36*s} 4Z" fill="#6FB352"/>`;}
-      const crown=p>.75?[[180,top,38],[150,top+18,26],[210,top+18,26],[165,top-18,24],[197,top-18,24]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="${(c[2]*cl((p-.75)*4)).toFixed(1)}" fill="#4E9A3C"/>`).join(''):'';
-      return `<path d="M100 222 Q180 210 260 222 L260 236 L100 236Z" fill="#7A5A3A"/><ellipse cx="180" cy="224" rx="8" ry="5" fill="#8A5A2B"/>
-        <path d="M180 222 V${top}" stroke="#6B8E3A" stroke-width="${3+5*p}" stroke-linecap="round"/>${lv}${crown}`;}},
-    mirror:{n:'المرآة',h:'كل استغفار بيمسح غبار عن المرآة',d(p,A){
-      const d=seeded(14,21,R=>[140+R()*80,70+R()*130,10+R()*14]); const left=14*(1-p);
-      return `${halo(180,135,80,'#fff',p*0.7)}<ellipse cx="180" cy="135" rx="62" ry="84" fill="${A}"/><ellipse cx="180" cy="135" rx="52" ry="74" fill="#DDEFF5"/>
-        <path d="M150 90 L200 60 M140 130 L215 80 M150 175 L220 125" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity="${(0.15+0.75*p).toFixed(2)}"/>`+
-        d.map((q,i)=>{const o=cl(left-i); return o>0?`<ellipse cx="${q[0]}" cy="${q[1]}" rx="${q[2]}" ry="${q[2]*.7}" fill="#8C8577" opacity="${(0.85*o).toFixed(2)}"/>`:'';}).join('')+
-        `<rect x="170" y="218" width="20" height="26" fill="${A}"/><rect x="146" y="242" width="68" height="8" rx="4" fill="${A}"/>`;}},
-    moon:{n:'القمر',h:'من هلال لبدر مع كل استغفار',d(p){
-      const q=Math.max(0.03,p);
-      return `${halo(180,130,90,LUM,p*0.9)}<circle cx="180" cy="130" r="70" fill="#2B3350" stroke="#56608A" stroke-width="2"/><path d="${moonPath(q,180,130,70)}" fill="#FFF3C4"/>`+
-        (p>=1?`<circle cx="160" cy="112" r="9" fill="#EFE0A8"/><circle cx="200" cy="150" r="12" fill="#EFE0A8"/><circle cx="195" cy="104" r="5" fill="#EFE0A8"/>`:'');}},
-    constellation:{n:'النجوم',h:'كل استغفار بينوّر نجمة',d(p){
-      const P=Array.from({length:12},(_,i)=>{const a=-Math.PI/2+i*Math.PI/6,r=i%2?50:90;return [180+r*Math.cos(a),135+r*Math.sin(a)];});
-      const lit=p*12; let ln='',st='';
-      for(let i=0;i<12;i++){const o=cl(lit-i), j=(i+1)%12; if(o>0&&(i<11||lit>=12)){const a=P[i],b=P[j],t=cl(lit-i-0.0); ln+=`<path d="M${a[0].toFixed(1)} ${a[1].toFixed(1)} L${(a[0]+(b[0]-a[0])*t).toFixed(1)} ${(a[1]+(b[1]-a[1])*t).toFixed(1)}" stroke="${LUM}" stroke-width="1.6" opacity=".7"/>`;}
-        st+=`<path d="${starPath(4,o>0?9:5,o>0?2.4:1.6,P[i][0],P[i][1])}" fill="${o>0?LUM:'#7A809A'}" opacity="${o>0?(0.4+0.6*o).toFixed(2):'.6'}"/>`;}
-      return halo(180,135,60,LUM,p*0.5)+ln+st;}},
-    candles:{n:'الشموع',h:'كل شوية استغفار بيولّع شمعة',d(p,A){
-      let o=''; const n=7, lit=p*n;
-      for(let i=0;i<n;i++){const x=90+i*30,h=60+((i*37)%5)*8,y=220-h,f=cl(lit-i);
-        o+=`<rect x="${x-9}" y="${y}" width="18" height="${h}" rx="3" fill="#F4EAD5" stroke="#CFC2A6"/><path d="M${x} ${y} V${y-6}" stroke="#333" stroke-width="2"/>`;
-        if(f>0) o+=halo(x,y-16,22,'#FFD27A',f*0.8)+`<path d="M${x} ${y-8-18*f} C${x+6} ${y-16} ${x+5} ${y-8} ${x} ${y-6} C${x-5} ${y-8} ${x-6} ${y-16} ${x} ${y-8-18*f}Z" fill="#FFB347"/>`;}
-      return o+`<rect x="70" y="220" width="220" height="8" rx="4" fill="${A}"/>`;}},
-    lantern:{n:'الفانوس',h:'كل استغفار بينوّر جزء من الفانوس',d(p,A){
-      const panes=[[160,90,20,40],[180,90,20,40],[150,135,20,50],[170,135,20,50],[190,135,20,50],[165,190,30,26]];
-      const lit=p*6;
-      return `${halo(180,140,90,'#FFC56B',p*0.8)}<path d="M180 30 V52" stroke="${A}" stroke-width="3"/><circle cx="180" cy="28" r="7" fill="none" stroke="${A}" stroke-width="3"/>
-        <path d="M150 88 L165 55 H195 L210 88Z" fill="${A}"/><path d="M142 132 H218 L210 88 H150Z" fill="${A}"/><path d="M140 186 H220 L218 132 H142Z" fill="${A}"/><path d="M160 186 H200 L196 218 H164Z" fill="${A}"/>`+
-        panes.map((q,i)=>{const o=cl(lit-i);return `<rect x="${q[0]}" y="${q[1]}" width="${q[2]}" height="${q[3]}" rx="3" fill="${o>0?'#FFD86B':'#2E2A3A'}" opacity="${o>0?(0.5+0.5*o).toFixed(2):'.9'}"/>`;}).join('')+`<path d="M164 218 H196 L180 238Z" fill="${A}"/>`;}},
-    fog:{n:'الضباب',h:'كل استغفار بيرفع الضباب عن الطريق',d(p){
-      let f=''; for(let i=0;i<6;i++){const o=cl((1-p)*6-i*0.7); f+=`<rect x="-10" y="${70+i*30}" width="380" height="46" rx="23" fill="#C9CED6" opacity="${(0.8*o).toFixed(2)}"/>`;}
-      return `${halo(180,90,70,'#FFE9A8',p)}<circle cx="180" cy="92" r="${(14+18*p).toFixed(1)}" fill="#FFE9A8" opacity="${(0.4+0.6*p).toFixed(2)}"/>
-        <path d="M150 262 L176 104 H184 L210 262Z" fill="#B99C6B"/><path d="M180 262 L180 104" stroke="#FFF4CF" stroke-width="3" stroke-dasharray="10 10"/>${f}`;}},
-    chains:{n:'القيود',h:'كل استغفار بيفك حلقة',d(p,A){
-      let o=''; const n=10, br=p*n;
-      for(let i=0;i<n;i++){const x=60+i*27, y=140, b=cl(br-i), dy=b*60*(i%2?1:-1), rot=b*50*(i%2?1:-1);
-        o+=`<g transform="translate(${x} ${y+dy}) rotate(${(i%2?90:0)+rot})" opacity="${(1-0.8*b).toFixed(2)}"><rect x="-15" y="-9" width="30" height="18" rx="9" fill="none" stroke="#6B7078" stroke-width="6"/></g>`;}
-      return halo(180,140,60,LUM,p)+o+(p>=1?`<circle cx="180" cy="140" r="16" fill="${LUM}"/>`+sparkle(210,110,9,1)+sparkle(150,170,7,.9):'');}},
-    rose:{n:'الوردة',h:'كل استغفار بيفتح ورقة من الوردة',d(p){
-      let o=''; const n=10, op=p*n;
-      for(let i=n-1;i>=0;i--){const t=cl(op-i), a=i*36, r=10+t*38;
-        o+=`<ellipse cx="180" cy="${(120-r*0.6).toFixed(1)}" rx="${(10+t*14).toFixed(1)}" ry="${(r*0.7).toFixed(1)}" transform="rotate(${a} 180 120)" fill="${t>0?'#E0485E':'#7A3A48'}" opacity="${(0.55+0.45*t).toFixed(2)}"/>`;}
-      return `<path d="M180 128 V240" stroke="#4E8A3A" stroke-width="6"/><path d="M180 200 q-30 -10 -40 -30 q26 2 40 22Z M180 214 q30 -8 42 -28 q-26 2 -42 20Z" fill="#5FA84A"/>${halo(180,120,60,'#FFC2CF',p*0.7)}${o}<circle cx="180" cy="120" r="${(8+6*p).toFixed(1)}" fill="#F2C94A"/>`;}},
-    beads:{n:'المسبحة',h:'كل استغفار بينوّر حبة',d(p,A){
-      const n=33, lit=p*n; let o='';
-      for(let i=0;i<n;i++){const a=Math.PI/2+i*2*Math.PI/n, x=180+80*Math.cos(a), y=125+68*Math.sin(a), f=cl(lit-i);
-        o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${f>0?'#FFD86B':'#5A4A3E'}" stroke="${f>0?'#C9982A':'#3A2E26'}" stroke-width="1.5"/>`;}
-      return halo(180,125,70,'#FFE39A',p*0.6)+`<ellipse cx="180" cy="125" rx="80" ry="68" fill="none" stroke="#8C7A5E" stroke-width="1.5"/>`+o+
-        `<path d="M180 193 V222" stroke="${A}" stroke-width="3"/><circle cx="180" cy="200" r="7" fill="${A}"/><path d="M172 222 L180 248 L188 222Z" fill="${A}"/>`;}},
-    pattern:{n:'النقش',h:'كل استغفار بيرسم خط من النقش',d(p,A){
-      const off=(100*(1-p)).toFixed(1);
-      const s1=starPath(8,95,48,180,135), s2=starPath(8,60,30,180,135);
-      return halo(180,135,80,LUM,p*0.5)+`<path d="${s1}" fill="none" stroke="#6B7078" stroke-width="3" opacity=".35"/><path d="${s2}" fill="none" stroke="#6B7078" stroke-width="3" opacity=".35"/><circle cx="180" cy="135" r="24" fill="none" stroke="#6B7078" stroke-width="3" opacity=".35"/>
-        <path d="${s1}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${off}" fill="none" stroke="${A}" stroke-width="4" stroke-linejoin="round"/>
-        <path d="${s2}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${off}" fill="none" stroke="${LUM}" stroke-width="3"/>
-        <circle cx="180" cy="135" r="24" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${off}" fill="${p>=1?A:'none'}" stroke="${A}" stroke-width="3"/>`;}},
-    mosaic:{n:'الفسيفساء',h:'كل استغفار بيلوّن بلاطة',d(p){
-      const cols=['#2F86B5','#E0A93A','#3AA5A8','#C8663E','#F6E9C4','#6E9F4E'], cells=[];
-      for(let r=0;r<7;r++)for(let c=0;c<6;c++){const x=122+c*20,y=80+r*20; if(r===0&&(c===0||c===5))continue; cells.push([x,y]);}
-      const order=seeded(cells.length,9,R=>R()).map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
-      const lit=Math.floor(p*cells.length+1e-9), on=new Set(order.slice(0,lit));
-      return `<path d="M116 226 V100 Q116 56 180 52 Q244 56 244 100 V226Z" fill="#3A3F49"/>`+cells.map((q,i)=>`<rect x="${q[0]}" y="${q[1]}" width="18" height="18" rx="3" fill="${on.has(i)?cols[i%6]:'#4B505C'}"/>`).join('')+
-        `<path d="M116 226 V100 Q116 56 180 52 Q244 56 244 100 V226" fill="none" stroke="#C8A15A" stroke-width="6"/>`;}},
-    rain:{n:'الغيث',h:'﴿يُرْسِلِ السَّمَاءَ عَلَيْكُم مِّدْرَارًا﴾، كل استغفار بيحيي الأرض',d(p){
-      const drops=seeded(30,3,R=>[90+R()*180,70+R()*110]); const grass=seeded(26,4,R=>[80+R()*200,212+R()*14,6+R()*10]);
-      const rainOp=p<1?Math.min(1,p*3):0.3;
-      return cloud(180,60,2.2,'#6B7385',.95)+drops.slice(0,Math.floor(p*30)+1).map(d=>`<path d="M${d[0]} ${d[1]} l-4 12" stroke="#8FC6E8" stroke-width="2.5" stroke-linecap="round" opacity="${rainOp.toFixed(2)}"/>`).join('')+
-        `<path d="M70 210 Q180 200 290 210 V240 H70Z" fill="${p<.5?'#A57B4E':'#7A6A3E'}"/>`+(p<.7?`<path d="M100 220 l20 6 l-8 8 M170 214 l12 10 l14 -4 M230 222 l16 -6 l6 10" stroke="#6B4A2E" stroke-width="2" fill="none" opacity="${(1-p/0.7).toFixed(2)}"/>`:'')+
-        grass.slice(0,Math.floor(p*26)).map(g=>`<path d="M${g[0]} ${g[1]} q2 -${g[2]} 5 -${g[2]*1.3} M${g[0]+3} ${g[1]} q-1 -${g[2]*.8} -5 -${g[2]}" stroke="#5FA84A" stroke-width="2.5" fill="none" stroke-linecap="round"/>`).join('');}},
-    river:{n:'النهر',h:'كل استغفار بيجري المية في النهر',d(p){
-      const path='M300 40 C250 80 300 120 220 140 C140 160 200 200 120 220 C90 228 70 240 60 262';
-      const pl=seeded(10,8,R=>R());
-      return `<path d="${path}" stroke="#A58A62" stroke-width="30" fill="none" stroke-linecap="round"/>`+
-        `<path d="${path}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${(100*(1-p)).toFixed(1)}" stroke="#4FA8D6" stroke-width="22" fill="none" stroke-linecap="round"/>`+
-        [[270,80],[180,120],[250,150],[160,190],[90,200],[140,240]].map((q,i)=>i<Math.floor(p*6)?`<circle cx="${q[0]}" cy="${q[1]}" r="10" fill="#5FA84A"/><circle cx="${q[0]+9}" cy="${q[1]+4}" r="7" fill="#6FB352"/>`:'').join('');}},
-    fruit:{n:'الثمر',h:'كل استغفار بيطلّع ثمرة',d(p){
-      const F=[[150,90],[200,80],[230,110],[130,120],[175,115],[210,135],[155,145],[240,85],[120,95],[190,150],[225,160],[140,170],[180,60],[260,130]];
-      const lit=p*F.length;
-      return `<path d="M175 250 C178 210 170 190 178 160 H190 C196 190 188 210 192 250Z" fill="#7A5A3A"/>`+
-        [[180,110,70],[130,130,42],[235,125,42],[180,70,40],[150,165,36],[215,165,36]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="${c[2]}" fill="#4E8A3A"/>`).join('')+
-        F.map((q,i)=>{const t=cl(lit-i);return t>0?`<circle cx="${q[0]}" cy="${q[1]}" r="${(3+5*t).toFixed(1)}" fill="#E0485E"/><path d="M${q[0]} ${q[1]-6*t} l2 -4" stroke="#3A5A2A" stroke-width="1.5"/>`:'';}).join('');}},
-    boat:{n:'المركب',h:'كل استغفار بيقرّب المركب من البر',d(p,A){
-      const amp=14*(1-p)+2, x=290-200*p; let waves='';
-      for(let k=0;k<3;k++){let d='M0 '+(190+k*18); for(let i=0;i<=12;i++) d+=` Q${i*30+15} ${190+k*18-amp*(i%2?1:-1)} ${i*30+30} ${190+k*18}`; waves+=`<path d="${d}" stroke="#E4F2F8" stroke-width="2" fill="none" opacity=".7"/>`;}
-      return cloud(250,50,1.8,'#4A505C',(1-p)*0.9)+`<rect y="180" width="360" height="92" fill="#2F6F9A"/>`+waves+
-        `<path d="M0 200 Q30 170 70 176 L80 200Z" fill="#8FB36A"/><rect x="40" y="130" width="12" height="48" fill="#F4EAD5"/><path d="M36 130 H56 L46 118Z" fill="#C8663E"/>${halo(46,126,26,'#FFE39A',p)}
-        <g transform="translate(${x.toFixed(1)} ${(186-amp*0.3).toFixed(1)}) rotate(${((1-p)*8*Math.sin(p*20)).toFixed(1)})"><path d="M-26 0 H26 L18 12 H-18Z" fill="#6B4A2E"/><path d="M0 -44 V0 M0 -44 L22 -6 H0Z" stroke="#6B4A2E" fill="#F4EBDD"/></g>`;}},
-    cage:{n:'القفص',h:'كل استغفار بيفك قضيب لحد ما العصفور يطير',d(p,A){
-      const n=9, gone=p*n; let bars='';
-      for(let i=0;i<n;i++){const x=140+i*10, o=1-cl(gone-i); if(o>0) bars+=`<path d="M${x} 90 V200" stroke="#6B7078" stroke-width="3" opacity="${o.toFixed(2)}"/>`;}
-      const by=p>=1?70:160;
-      return halo(180,140,60,LUM,p*0.6)+`<path d="M136 90 Q180 40 224 90" fill="none" stroke="#6B7078" stroke-width="4" opacity="${(1-p*0.7).toFixed(2)}"/>`+bars+
-        `<rect x="132" y="198" width="96" height="10" rx="4" fill="${A}"/>
-        <g transform="translate(180 ${by})"><ellipse cx="0" cy="0" rx="14" ry="10" fill="#F2C94A"/><circle cx="10" cy="-6" r="6" fill="#F2C94A"/><path d="M15 -6 l6 2 l-6 2Z" fill="#E0853A"/><circle cx="12" cy="-7" r="1.3" fill="#222"/><path d="M-4 -2 q-12 ${p>=1?-18:-4} -18 -2" fill="#E0B13A"/></g>`;}},
-    mountain:{n:'الجبل',h:'كل استغفار خطوة لفوق',d(p,A){
-      const pts=[[70,236],[120,214],[100,190],[150,170],[130,146],[175,126],[160,104],[190,84],[180,62]];
-      let L=0; const seg=[]; for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); seg.push(d); L+=d;}
-      let t=p*L, pos=pts[0]; for(let i=0;i<seg.length;i++){ if(t<=seg[i]){const a=pts[i],b=pts[i+1],f=t/seg[i]; pos=[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f]; break;} t-=seg[i]; pos=pts[i+1]; }
-      const trail='M'+pts.map(q=>q.join(' ')).join(' L');
-      return `<path d="M20 250 L180 40 L340 250Z" fill="#7C8BA0"/><path d="M180 40 L156 72 L170 68 L180 78 L192 68 L204 72Z" fill="#fff"/>
-        <path d="${trail}" fill="none" stroke="#C9CED6" stroke-width="3" stroke-dasharray="4 5"/><path d="${trail}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${(100*(1-p)).toFixed(1)}" fill="none" stroke="${LUM}" stroke-width="3"/>
-        <path d="M180 62 V38" stroke="#333" stroke-width="2"/><path d="M180 38 L198 44 L180 50Z" fill="${p>=1?'#E0A93A':'#8A8F98'}"/>${halo(180,44,24,LUM,p>=1?1:0)}
-        <circle cx="${pos[0].toFixed(1)}" cy="${(pos[1]-6).toFixed(1)}" r="7" fill="${A}" stroke="#fff" stroke-width="2"/>`;}},
-    sunrise:{n:'الشروق',h:'كل استغفار بيطلّع الشمس شوية',d(p){
-      const cy=250-140*p;
-      return `<rect width="360" height="272" fill="#FFB36B" opacity="${(0.45*p).toFixed(2)}"/>${halo(180,cy,90,'#FFE39A',0.3+0.7*p)}<circle cx="180" cy="${cy.toFixed(1)}" r="40" fill="#FFD27A"/>
-        <path d="M0 220 Q90 200 180 214 T360 208 V272 H0Z" fill="#3A4863"/>`;}}
+
+    heart:{n:'القلب',h:'«إذا استغفر صُقل قلبه»، كل استغفار بيمسح نقطة',
+      pts:[[150,122],[168,112],[193,112],[212,122],[140,142],[161,135],[184,131],[207,137],[224,146],[153,160],[176,154],[199,160],[166,178],[190,177],[180,195],[146,130]],
+      f(p){const i=Math.min(15,Math.floor(16*(1-p)));return this.pts[i];},
+      d(p){const heart='M180 214 C88 152 106 66 180 104 C254 66 272 152 180 214Z', left=16*(1-p), full=Math.floor(left), fr=left-full;
+      return halo(180,145,120,p*0.9,'gWarm')+shadowE(180,226,60)+`<g class="float"><path d="${heart}" fill="url(#gHeartD)"/><path d="${heart}" fill="url(#gHeart)" opacity="${p.toFixed(2)}"/>`+
+        this.pts.map((q,i)=>i<full||(i===full&&fr>0)?`<circle cx="${q[0]}" cy="${q[1]}" r="7.5" fill="#150A0F" opacity="${(i<full?.9:.9*fr).toFixed(2)}"/><circle cx="${q[0]-2}" cy="${q[1]-2}" r="2" fill="#fff" opacity=".12"/>`:'').join('')+
+        `<path d="${heart}" fill="none" stroke="#fff" stroke-opacity="${(0.1+0.4*p).toFixed(2)}" stroke-width="2"/><path d="M146 116 Q156 98 176 106" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity="${(0.15+0.7*p).toFixed(2)}"/></g>`+
+        (p>=1?sparkle(240,96,11,1)+sparkle(118,118,8,.9,.8)+sparkle(222,196,7,.9,1.4):'');}},
+
+    page:{n:'الصحيفة',h:'كل استغفار بيمسح بقعة حبر ويكتب سطر نور',
+      blots:seeded(12,77,R=>[128+R()*104,74+R()*128,6+R()*9]),
+      f(p){const i=Math.min(11,Math.ceil(12*(1-p))-1);return i>=0?this.blots[i]:[180,140];},
+      d(p){const left=Math.ceil(12*(1-p)-1e-9); let lines='';
+      for(let i=0;i<8;i++){const t=cl(p*8-i); if(t>0) lines+=`<rect x="${(236-108*t).toFixed(1)}" y="${80+i*17}" width="${(108*t).toFixed(1)}" height="5" rx="2.5" fill="url(#gGold)"/>`;}
+      return halo(180,140,120,p*0.7,'gWarm')+shadowE(182,228,78)+`<g transform="rotate(-3 180 140)" class="float"><path d="M114 58 H246 V222 Q180 214 114 222Z" fill="url(#gPaper)" stroke="#B9A37A" stroke-width="1.5"/>
+        <path d="M114 58 H246" stroke="#D9C6A0" stroke-width="3"/><path d="M122 64 V216" stroke="#E0CFA8" stroke-width="1" opacity=".6"/>${lines}`+
+        this.blots.map((b,i)=>i<left?`<path d="M${b[0]-b[2]} ${b[1]} q${b[2]*.4} ${-b[2]*1.1} ${b[2]} ${-b[2]*.8} q${b[2]*1.2} ${-b[2]*.2} ${b[2]} ${b[2]*.9} q${-b[2]*.1} ${b[2]*1.1} ${-b[2]*1.1} ${b[2]*.8} q${-b[2]} ${b[2]*.1} ${-b[2]*.9} ${-b[2]*.9}Z" fill="#1B1E26" opacity=".92"/><circle cx="${b[0]+b[2]*1.3}" cy="${b[1]+b[2]*.6}" r="${(b[2]*.25).toFixed(1)}" fill="#1B1E26"/>`:'').join('')+
+        `</g>`+(p>=1?sparkle(250,70,10,1)+sparkle(108,200,7,.9,.9):'');}},
+
+    clouds:{n:'السحاب',h:'كل استغفار بيبعّد سحابة لحد ما النور يبان',
+      d(p){const cs=[[130,112,1.3,-1],[232,106,1.4,1],[182,152,1.6,1],[110,168,1.2,-1],[252,162,1.3,1],[176,94,1.1,-1],[205,190,1.2,1]];
+      let rays=''; for(let i=0;i<16;i++){const a=i*Math.PI/8; rays+=`<path d="M${(180+48*Math.cos(a)).toFixed(1)} ${(128+48*Math.sin(a)).toFixed(1)} L${(180+(i%2?82:100)*Math.cos(a)).toFixed(1)} ${(128+(i%2?82:100)*Math.sin(a)).toFixed(1)}" stroke="#FFF1B8" stroke-width="${i%2?3:5}" stroke-linecap="round"/>`;}
+      return halo(180,128,130,p,'gWarm')+`<g opacity="${cl((p-.35)*1.6).toFixed(2)}" class="spin">${rays}</g><circle cx="180" cy="128" r="40" fill="url(#gSun)" opacity="${(0.3+0.7*p).toFixed(2)}"/>`+
+        cs.map((c,i)=>{const t=cl(p*7-i*0.85); return cloudG(c[0]+c[3]*t*240,c[1]-t*10,c[2],'url(#gCloudD)',1-t,'drift');}).join('');}},
+
+    lamp:{n:'القنديل',h:'كل استغفار نقطة زيت لحد ما القنديل ينوّر',f(){return [180,150];},
+      d(p,A){const lvl=198-94*p, fh=cl(p*1.3);
+      return `<defs><clipPath id="mc"><circle cx="180" cy="150" r="45"/></clipPath></defs>`+halo(180,130,130,p,'gWarm')+
+        `<path d="M180 14 V66" stroke="${shade(A,-.2)}" stroke-width="3" stroke-dasharray="6 3"/><path d="M158 66 H202 L193 94 H167Z" fill="url(#gM)"/><rect x="164" y="92" width="32" height="8" rx="3" fill="url(#gM)"/>
+        <circle cx="180" cy="150" r="46" fill="#DFF3F7" opacity=".35"/>
+        <g clip-path="url(#mc)"><rect x="130" y="${lvl.toFixed(1)}" width="100" height="120" fill="url(#gGold)" opacity=".92"/><path d="M130 ${lvl.toFixed(1)} q12 -4 25 0 t25 0 t25 0 t25 0" stroke="#FFF0B8" stroke-width="2" fill="none" class="shim" stroke-dasharray="12 8"/></g>
+        <circle cx="180" cy="150" r="46" fill="none" stroke="url(#gM)" stroke-width="4"/><path d="M150 124 Q160 110 176 108" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none" opacity=".55"/>
+        <path d="M166 195 H194 L203 214 H157Z" fill="url(#gM)"/>`+
+        (fh>0?`<g transform="translate(180 108)"><g class="flick"><path d="M0 ${(-50*fh).toFixed(1)} C${(10*fh).toFixed(1)} ${(-30*fh).toFixed(1)} ${(12*fh).toFixed(1)} -8 0 0 C${(-12*fh).toFixed(1)} -8 ${(-10*fh).toFixed(1)} ${(-30*fh).toFixed(1)} 0 ${(-50*fh).toFixed(1)}Z" fill="url(#gFlame)"/></g></g>`:'');}},
+
+    water:{n:'المية',h:'كل استغفار بيصفّي المية لحد ما القاع يبان',f(){return [180,175];},
+      peb:seeded(11,5,R=>[98+R()*164,186+R()*26,5+R()*7]),
+      d(p){return `<defs><clipPath id="mw"><ellipse cx="180" cy="182" rx="132" ry="52"/></clipPath></defs>`+
+        `<ellipse cx="180" cy="186" rx="140" ry="58" fill="url(#gSoil)"/><g clip-path="url(#mw)"><rect x="40" y="120" width="280" height="130" fill="url(#gWater)"/>`+
+        this.peb.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${(b[2]*.6).toFixed(1)}" fill="#D9C8A6"/><ellipse cx="${b[0]-1}" cy="${b[1]-2}" rx="${(b[2]*.5).toFixed(1)}" ry="${(b[2]*.2).toFixed(1)}" fill="#fff" opacity=".35"/>`).join('')+
+        `<g class="drift" opacity="${cl(p*1.5-.3).toFixed(2)}"><path d="M150 168 q12 -9 24 0 q-12 9 -24 0 l-9 -6 v12z" fill="#F29A4A"/><circle cx="168" cy="166" r="1.6" fill="#222"/></g>
+        <g class="drift" style="animation-direction:alternate-reverse" opacity="${cl(p*1.5-.6).toFixed(2)}"><path d="M218 192 q10 -8 20 0 q-10 8 -20 0 l-8 -5 v10z" fill="#F2C94A"/><circle cx="233" cy="190" r="1.4" fill="#222"/></g>
+        <rect x="40" y="120" width="280" height="130" fill="url(#gMurk)" opacity="${(0.94*(1-p)).toFixed(2)}"/>
+        <path d="M70 160 q20 -6 40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#fff" stroke-width="2" fill="none" stroke-dasharray="14 10" class="shim" opacity="${(0.2+0.6*p).toFixed(2)}"/></g>
+        <ellipse cx="180" cy="182" rx="132" ry="52" fill="none" stroke="#6B5234" stroke-width="3"/>`+(p>=1?sparkle(250,150,9,1)+sparkle(120,196,7,.9,1):'');}},
+
+    window:{n:'الشباك',h:'كل استغفار بيفتح الشباك شوية للنور',f(){return [180,130];},
+      d(p,A){const w=60*(1-p), ang=cl(p);
+      let rays=''; for(let i=0;i<6;i++) rays+=`<path d="M${150+i*12} 212 L${110+i*28} 272" stroke="#FFF4CF" stroke-width="12" opacity="${(p*0.3).toFixed(2)}"/>`;
+      const arch='M120 212 V110 Q120 48 180 48 Q240 48 240 110 V212Z';
+      return `<path d="${arch}" fill="#FFE9A8"/><defs><clipPath id="mwn"><path d="${arch}"/></clipPath></defs><g clip-path="url(#mwn)">${halo(180,120,90,0.5+0.5*p,'gWarm')}<circle cx="180" cy="120" r="24" fill="url(#gSun)" opacity="${p.toFixed(2)}"/>
+        <path d="M120 212 Q180 188 240 212" fill="#9BCB7A" opacity="${p.toFixed(2)}"/></g>${rays}
+        <g><rect x="120" y="56" width="${w.toFixed(1)}" height="156" fill="url(#gWood)" stroke="#3F2A18"/>${w>14?`<path d="M${126} 70 h${(w-12).toFixed(1)} M126 100 h${(w-12).toFixed(1)} M126 130 h${(w-12).toFixed(1)} M126 160 h${(w-12).toFixed(1)} M126 190 h${(w-12).toFixed(1)}" stroke="#3F2A18" stroke-width="2" opacity=".6"/>`:''}</g>
+        <g><rect x="${(240-w).toFixed(1)}" y="56" width="${w.toFixed(1)}" height="156" fill="url(#gWood)" stroke="#3F2A18"/>${w>14?`<path d="M${(246-w).toFixed(1)} 70 h${(w-12).toFixed(1)} M${(246-w).toFixed(1)} 100 h${(w-12).toFixed(1)} M${(246-w).toFixed(1)} 130 h${(w-12).toFixed(1)} M${(246-w).toFixed(1)} 160 h${(w-12).toFixed(1)} M${(246-w).toFixed(1)} 190 h${(w-12).toFixed(1)}" stroke="#3F2A18" stroke-width="2" opacity=".6"/>`:''}</g>
+        <path d="${arch}" fill="none" stroke="url(#gM)" stroke-width="9"/><rect x="108" y="208" width="144" height="11" rx="4" fill="url(#gM)" filter="url(#sh)"/>`;}},
+
+    seed:{n:'البذرة',h:'كل استغفار بيسقي البذرة لحد ما تبقى شجرة',f(p){return [180,222-(10+140*p)];},
+      d(p){const h=10+140*p, top=222-h; let lv='';
+      for(let i=0;i<Math.floor(p*8);i++){const y=210-i*16, s=i%2?1:-1; if(y>top+10) lv+=`<path d="M180 ${y} q${22*s} -16 ${38*s} -4 q${-14*s} 14 ${-38*s} 4Z" fill="url(#gLeaf)"/>`;}
+      const cr=cl((p-.72)*3.6), crown=cr>0?[[180,top,40],[148,top+20,28],[212,top+20,28],[162,top-18,26],[198,top-18,26],[180,top-30,20]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="${(c[2]*cr).toFixed(1)}" fill="url(#gLeaf)"/>`).join(''):'';
+      return halo(180,top,90,p*0.5,'gWarm')+`<path d="M92 224 Q180 208 268 224 L268 240 L92 240Z" fill="url(#gSoil)"/><ellipse cx="180" cy="224" rx="9" ry="5.5" fill="#8A5A2B"/>
+        <g class="sway"><path d="M180 222 Q${184-6*p} ${(222+top)/2} 180 ${top.toFixed(1)}" stroke="#6B8E3A" stroke-width="${(3+6*p).toFixed(1)}" stroke-linecap="round" fill="none"/>${lv}${crown}</g>`+(p>=1?sparkle(230,top-10,9,1)+sparkle(130,top+30,7,.9,1):'');}},
+
+    mirror:{n:'المرآة',h:'كل استغفار بيمسح غبار عن المرآة',
+      dust:seeded(14,21,R=>[142+R()*76,72+R()*126,10+R()*14]),
+      f(p){const i=Math.min(13,Math.floor(14*(1-p)));return this.dust[i];},
+      d(p,A){const left=14*(1-p);
+      return halo(180,135,110,p*0.8)+shadowE(180,252,40)+`<ellipse cx="180" cy="135" rx="64" ry="86" fill="url(#gM)" filter="url(#sh)"/><ellipse cx="180" cy="135" rx="64" ry="86" fill="none" stroke="${shade(A,-.4)}" stroke-width="2" stroke-dasharray="3 5"/>
+        <ellipse cx="180" cy="135" rx="52" ry="74" fill="#CFE6EE"/><ellipse cx="180" cy="135" rx="52" ry="74" fill="url(#gGlow)" opacity="${(0.2+0.6*p).toFixed(2)}"/>
+        <path d="M150 92 L204 58 M140 132 L218 80 M152 178 L222 128" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="${(0.1+0.8*p).toFixed(2)}"/>`+
+        this.dust.map((q,i)=>{const o=cl(left-i); return o>0?`<ellipse cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" rx="${q[2].toFixed(1)}" ry="${(q[2]*.7).toFixed(1)}" fill="#9A9284" opacity="${(0.8*o).toFixed(2)}" filter="url(#mg2)"/>`:'';}).join('')+
+        `<rect x="171" y="219" width="18" height="26" fill="url(#gMh)"/><rect x="144" y="243" width="72" height="9" rx="4" fill="url(#gM)"/>`+(p>=1?sparkle(214,84,10,1)+sparkle(150,190,7,.9,.9):'');}},
+
+    moon:{n:'القمر',h:'من هلال لبدر مع كل استغفار',f(){return [210,130];},
+      d(p){const q=Math.max(0.04,p);
+      return halo(180,130,140,p*0.9)+`<circle cx="180" cy="130" r="70" fill="#1E2540"/><circle cx="180" cy="130" r="70" fill="none" stroke="#5B668F" stroke-width="1.5" opacity=".6"/>
+        <g class="pulseG"><path d="${moonPath(q,180,130,70)}" fill="url(#gMoon)"/></g>`+
+        `<g opacity="${cl(p*1.2-.2).toFixed(2)}"><circle cx="198" cy="112" r="9" fill="#E6D39A"/><circle cx="210" cy="150" r="12" fill="#E6D39A"/><circle cx="222" cy="104" r="5" fill="#E6D39A"/><circle cx="160" cy="160" r="7" fill="#E6D39A" opacity="${cl(p*2-1).toFixed(2)}"/></g>`+
+        [[70,60],[300,80],[90,200],[285,210],[250,40]].map((s,i)=>sparkle(s[0],s[1],5+i%3*2,.9,i*.6)).join('');}},
+
+    constellation:{n:'النجوم',h:'كل استغفار بينوّر نجمة',
+      P:Array.from({length:12},(_,i)=>{const a=-Math.PI/2+i*Math.PI/6,r=i%2?50:92;return [180+r*Math.cos(a),135+r*Math.sin(a)];}),
+      f(p){return this.P[Math.min(11,Math.floor(p*12))];},
+      d(p){const P=this.P, lit=p*12; let ln='',st='';
+      for(let i=0;i<12;i++){const o=cl(lit-i), j=(i+1)%12, t=cl(lit-i-0.3)/0.7;
+        if(o>0&&t>0&&(i<11||lit>=12)){const a=P[i],b=P[j]; ln+=`<path d="M${a[0].toFixed(1)} ${a[1].toFixed(1)} L${(a[0]+(b[0]-a[0])*Math.min(1,t)).toFixed(1)} ${(a[1]+(b[1]-a[1])*Math.min(1,t)).toFixed(1)}" stroke="#FFF1B8" stroke-width="1.8" opacity=".75"/>`;}
+        st+= o>0? halo(P[i][0],P[i][1],16,0.6*o)+`<path d="${starPath(4,10,2.6,P[i][0],P[i][1])}" fill="${LUM}" class="twk" ${dl(i)}/>` : `<circle cx="${P[i][0].toFixed(1)}" cy="${P[i][1].toFixed(1)}" r="2.5" fill="#8A90AA" opacity=".7"/>`;}
+      return halo(180,135,100,p*0.5)+ln+st+(p>=1?`<path d="${starPath(8,26,11,180,135)}" fill="url(#gSun)" class="pulseG"/>`:'');}},
+
+    candles:{n:'الشموع',h:'كل شوية استغفار بيولّع شمعة',f(p){const i=Math.min(6,Math.floor(p*7));return [90+i*30,160];},
+      d(p){let o=''; const n=7, lit=p*n;
+      for(let i=0;i<n;i++){const x=90+i*30,h=58+((i*37)%5)*9,y=222-h,f=cl(lit-i);
+        o+=`<rect x="${x-10}" y="${y}" width="20" height="${h}" rx="4" fill="url(#gCandle)"/><path d="M${x-10} ${y+4} q5 6 10 0 q5 8 10 0" fill="#FFFFFF" opacity=".7"/><path d="M${x} ${y} V${y-7}" stroke="#2A2A2A" stroke-width="2"/>`;
+        if(f>0) o+=halo(x,y-20,36,f*0.9,'gWarm')+`<g transform="translate(${x} ${y-6})"><g class="flick" ${dl(i)}><path d="M0 ${(-26*f).toFixed(1)} C7 -14 7 -4 0 0 C-7 -4 -7 -14 0 ${(-26*f).toFixed(1)}Z" fill="url(#gFlame)"/></g></g>`;}
+      return shadowE(180,232,120,.3)+o+`<rect x="66" y="220" width="228" height="10" rx="5" fill="url(#gM)"/>`;}},
+
+    lantern:{n:'الفانوس',h:'كل استغفار بينوّر جزء من الفانوس',
+      panes:[[160,92,20,38],[180,92,20,38],[150,136,20,48],[170,136,20,48],[190,136,20,48],[166,190,28,24]],
+      f(p){const q=this.panes[Math.min(5,Math.floor(p*6))];return [q[0]+q[2]/2,q[1]+q[3]/2];},
+      d(p){const lit=p*6;
+      return halo(180,140,130,p,'gWarm')+`<g class="sway" style="transform-origin:50% 0%"><path d="M180 16 V52" stroke="#8C7A5E" stroke-width="3"/><circle cx="180" cy="16" r="7" fill="none" stroke="url(#gM)" stroke-width="3"/>
+        <path d="M150 90 L165 54 H195 L210 90Z" fill="url(#gM)"/><path d="M141 134 H219 L211 90 H149Z" fill="url(#gM)"/><path d="M139 188 H221 L219 134 H141Z" fill="url(#gM)"/><path d="M158 188 H202 L197 218 H163Z" fill="url(#gM)"/>`+
+        this.panes.map((q,i)=>{const o=cl(lit-i);return `<rect x="${q[0]+1}" y="${q[1]}" width="${q[2]-2}" height="${q[3]}" rx="3" fill="${o>0?'url(#gGlassPane)':'#2A2636'}" opacity="${o>0?(0.55+0.45*o).toFixed(2):'.95'}"/>`+(o>0?`<rect x="${q[0]+3}" y="${q[1]+3}" width="3" height="${q[3]-8}" rx="1.5" fill="#fff" opacity=".45"/>`:'');}).join('')+
+        `<path d="M163 218 H197 L180 240Z" fill="url(#gM)"/><circle cx="180" cy="244" r="4" fill="url(#gM)"/></g>`;}},
+
+    fog:{n:'الضباب',h:'كل استغفار بيرفع الضباب عن الطريق',f(){return [180,150];},
+      d(p){let f=''; for(let i=0;i<7;i++){const o=cl((1-p)*7-i*0.75); f+=`<g class="drift" ${dl(i)}><rect x="-40" y="${60+i*28}" width="440" height="48" rx="24" fill="#D5DAE1" opacity="${(0.82*o).toFixed(2)}" filter="url(#mg2)"/></g>`;}
+      return halo(180,92,110,p,'gWarm')+`<circle cx="180" cy="94" r="${(14+20*p).toFixed(1)}" fill="url(#gSun)" opacity="${(0.4+0.6*p).toFixed(2)}"/>
+        <path d="M144 272 L176 104 H184 L216 272Z" fill="#B99C6B"/><path d="M144 272 L176 104 H180 L160 272Z" fill="#A5875A"/><path d="M180 272 L180 104" stroke="#FFF4CF" stroke-width="3" stroke-dasharray="10 12"/>
+        <path d="M120 272 L150 180 M240 272 L210 180" stroke="#6FA351" stroke-width="10" stroke-linecap="round" opacity="${p.toFixed(2)}"/>${f}`;}},
+
+    chains:{n:'القيود',h:'كل استغفار بيفك حلقة',f(p){const i=Math.min(9,Math.floor(p*10));return [60+i*27,140];},
+      d(p){let o=''; const n=10, br=p*n;
+      for(let i=0;i<n;i++){const x=60+i*27, b=cl(br-i), dy=b*70*(i%2?1:-1), rot=b*60*(i%2?1:-1);
+        o+=`<g transform="translate(${x} ${(140+dy).toFixed(1)}) rotate(${((i%2?90:0)+rot).toFixed(1)})" opacity="${(1-0.85*b).toFixed(2)}"><rect x="-15" y="-9" width="30" height="18" rx="9" fill="none" stroke="url(#gSteel)" stroke-width="7"/><rect x="-12" y="-7" width="10" height="3" rx="1.5" fill="#fff" opacity=".4"/></g>`;}
+      return halo(180,140,110,p)+`<rect x="30" y="126" width="16" height="28" rx="3" fill="url(#gSteel)"/><rect x="314" y="126" width="16" height="28" rx="3" fill="url(#gSteel)"/>`+o+
+        (p>=1?`<circle cx="180" cy="140" r="18" fill="url(#gSun)" class="pulseG"/>`+sparkle(214,104,10,1)+sparkle(146,176,8,.9,.7):'');}},
+
+    rose:{n:'الوردة',h:'كل استغفار بيفتح ورقة من الوردة',f(){return [180,112];},
+      d(p){let o=''; const n=10, op=p*n;
+      for(let i=n-1;i>=0;i--){const t=cl(op-i), a=i*36+(i%2?18:0), r=10+t*40;
+        o+=`<ellipse cx="180" cy="${(120-r*0.62).toFixed(1)}" rx="${(10+t*15).toFixed(1)}" ry="${(r*0.72).toFixed(1)}" transform="rotate(${a} 180 120)" fill="${t>0?'url(#gRose)':'#6A3040'}" opacity="${(0.6+0.4*t).toFixed(2)}"/>`;}
+      return halo(180,120,110,p*0.8,'gWarm')+`<g class="sway"><path d="M180 128 Q176 190 182 244" stroke="#4E8A3A" stroke-width="6" fill="none"/><path d="M180 200 q-32 -10 -44 -32 q28 2 44 24Z M181 214 q32 -8 44 -30 q-28 2 -44 22Z" fill="url(#gLeaf)"/>${o}<circle cx="180" cy="120" r="${(8+7*p).toFixed(1)}" fill="url(#gBead)"/></g>`;}},
+
+    beads:{n:'المسبحة',h:'كل استغفار بينوّر حبة',
+      pos:Array.from({length:33},(_,i)=>{const a=Math.PI/2+i*2*Math.PI/33;return [180+82*Math.cos(a),122+70*Math.sin(a)];}),
+      f(p){return this.pos[Math.min(32,Math.floor(p*33))];},
+      d(p,A){const lit=p*33;
+      return halo(180,122,120,p*0.6,'gWarm')+`<ellipse cx="180" cy="122" rx="82" ry="70" fill="none" stroke="#8C7A5E" stroke-width="1.5"/>`+
+        this.pos.map((q,i)=>{const f=cl(lit-i);return `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="7.5" fill="url(#${f>0?'gBead':'gBeadD'})"/>`;}).join('')+
+        `<path d="M180 192 V222" stroke="${shade(A,-.2)}" stroke-width="3"/><circle cx="180" cy="200" r="8" fill="url(#gM)"/><g class="sway" style="transform-origin:50% 0%"><path d="M171 222 L180 252 L189 222Z" fill="url(#gM)"/><path d="M174 230 L180 258 M186 230 L180 258" stroke="${shade(A,-.3)}" stroke-width="1"/></g>`;}},
+
+    pattern:{n:'النقش',h:'كل استغفار بيرسم خط من النقش',f(){return [180,135];},
+      d(p,A){const off=(100*(1-p)).toFixed(1), s1=starPath(8,96,50,180,135), s2=starPath(8,62,31,180,135), s3=starPath(8,28,14,180,135);
+      return halo(180,135,130,p*0.6)+`<g class="spin" style="animation-duration:120s"><path d="${s1}" fill="${p>=1?'url(#gM)':'none'}" fill-opacity=".25" stroke="#6B7078" stroke-width="3" opacity=".35"/><path d="${s2}" fill="none" stroke="#6B7078" stroke-width="3" opacity=".35"/>
+        <path d="${s1}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${off}" fill="none" stroke="url(#gGold)" stroke-width="5" stroke-linejoin="round"/>
+        <path d="${s2}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${off}" fill="none" stroke="url(#gM)" stroke-width="4" stroke-linejoin="round"/>
+        <path d="${s3}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${off}" fill="${p>=1?'url(#gGold)':'none'}" stroke="url(#gGold)" stroke-width="3"/></g>`;}},
+
+    mosaic:{n:'الفسيفساء',h:'كل استغفار بيلوّن بلاطة',
+      cells:(()=>{const c=[];for(let r=0;r<7;r++)for(let k=0;k<6;k++){if(r===0&&(k===0||k===5))continue;c.push([122+k*20,80+r*20]);}return c;})(),
+      ord:null,
+      order(){ if(!this.ord) this.ord=seeded(this.cells.length,9,R=>R()).map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]); return this.ord; },
+      f(p){const o=this.order(),k=Math.min(o.length-1,Math.floor(p*o.length));return [this.cells[o[k]][0]+9,this.cells[o[k]][1]+9];},
+      d(p){const cols=['#2F86B5','#E0A93A','#3AA5A8','#C8663E','#F6E9C4','#6E9F4E','#8E4A6E'], o=this.order();
+      const lit=Math.floor(p*this.cells.length+1e-9), on=new Set(o.slice(0,lit));
+      return shadowE(180,236,80)+`<path d="M114 228 V100 Q114 54 180 50 Q246 54 246 100 V228Z" fill="#2E323A" filter="url(#sh)"/>`+
+        this.cells.map((q,i)=>on.has(i)?`<rect x="${q[0]}" y="${q[1]}" width="18" height="18" rx="3" fill="${cols[(i*5)%7]}"/><path d="M${q[0]+2} ${q[1]+3} h8" stroke="#fff" stroke-width="2" opacity=".35"/>`:`<rect x="${q[0]}" y="${q[1]}" width="18" height="18" rx="3" fill="#434854"/>`).join('')+
+        `<path d="M114 228 V100 Q114 54 180 50 Q246 54 246 100 V228" fill="none" stroke="url(#gGold)" stroke-width="7"/>`+(p>=1?halo(180,140,100,.6)+sparkle(236,70,10,1):'');}},
+
+    rain:{n:'الغيث',h:'﴿يُرْسِلِ السَّمَاءَ عَلَيْكُم مِّدْرَارًا﴾، كل استغفار بيحيي الأرض',f(){return [180,200];},
+      drops:seeded(34,3,R=>[88+R()*184,70+R()*120]), grass:seeded(28,4,R=>[80+R()*200,214+R()*14,7+R()*11]),
+      d(p){const rainOp=p<1?Math.min(1,p*3+.2):0.25;
+      return cloudG(180,58,2.3,'url(#gCloudD)',.97,'drift')+
+        this.drops.slice(0,Math.floor(p*34)+2).map((d,i)=>`<path d="M${d[0].toFixed(1)} ${d[1].toFixed(1)} l-4 13" stroke="#9FD6F2" stroke-width="2.5" stroke-linecap="round" opacity="${rainOp.toFixed(2)}" class="fall" ${dl(i)}/>`).join('')+
+        `<path d="M66 212 Q180 198 294 212 V244 H66Z" fill="url(#gSoil)"/><path d="M66 212 Q180 198 294 212 V244 H66Z" fill="#6FA351" opacity="${cl(p*1.3-.3).toFixed(2)}"/>`+
+        (p<.8?`<path d="M96 222 l20 7 l-8 9 M170 216 l12 11 l14 -4 M230 224 l16 -7 l6 11 M130 232 l10 -6" stroke="#5A3A22" stroke-width="2" fill="none" opacity="${(1-p/0.8).toFixed(2)}"/>`:'')+
+        `<g class="sway">`+this.grass.slice(0,Math.floor(p*28)).map(g=>`<path d="M${g[0].toFixed(1)} ${g[1].toFixed(1)} q2 -${g[2].toFixed(1)} 6 -${(g[2]*1.3).toFixed(1)} M${(g[0]+3).toFixed(1)} ${g[1].toFixed(1)} q-1 -${(g[2]*.8).toFixed(1)} -6 -${g[2].toFixed(1)}" stroke="#4E9A3C" stroke-width="2.5" fill="none" stroke-linecap="round"/>`).join('')+`</g>`+
+        (p>=.9?[[110,208],[250,206],[180,204]].map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="4" fill="#F4A7B9"/><circle cx="${q[0]}" cy="${q[1]}" r="1.6" fill="#F2C94A"/>`).join(''):'');}},
+
+    river:{n:'النهر',h:'كل استغفار بيجري المية في النهر',f(){return [180,140];},
+      d(p){const path='M300 36 C250 80 300 120 220 140 C140 160 200 200 120 222 C90 230 70 242 60 266';
+      return `<path d="${path}" stroke="url(#gSoil)" stroke-width="34" fill="none" stroke-linecap="round"/><path d="${path}" stroke="#8A6A44" stroke-width="30" fill="none" stroke-linecap="round" opacity=".5"/>`+
+        `<path d="${path}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${(100*(1-p)).toFixed(1)}" stroke="url(#gWater)" stroke-width="24" fill="none" stroke-linecap="round"/>`+
+        `<path d="${path}" pathLength="100" stroke-dasharray="4 6" stroke="#E4F6FF" stroke-width="3" fill="none" class="shim" opacity="${(0.7*cl(p*3)).toFixed(2)}" style="stroke-dashoffset:${(100*(1-p)).toFixed(1)}"/>`+
+        [[268,82],[184,118],[252,154],[160,194],[92,202],[138,244]].map((q,i)=>i<Math.floor(p*6)?`<g class="sway" ${dl(i)}><circle cx="${q[0]}" cy="${q[1]}" r="11" fill="url(#gLeaf)"/><circle cx="${q[0]+10}" cy="${q[1]+5}" r="8" fill="url(#gLeaf)"/></g>`:'').join('');}},
+
+    fruit:{n:'الثمر',h:'كل استغفار بيطلّع ثمرة',
+      F:[[150,90],[200,80],[230,110],[130,120],[175,115],[210,135],[155,145],[240,85],[120,95],[190,150],[225,160],[140,170],[180,60],[260,130]],
+      f(p){return this.F[Math.min(13,Math.floor(p*14))];},
+      d(p){const lit=p*14;
+      return shadowE(182,252,70)+`<path d="M174 252 C178 212 168 190 177 160 H191 C198 190 188 212 194 252Z" fill="url(#gWood)"/><g class="sway">`+
+        [[180,110,72],[128,130,44],[236,125,44],[180,68,42],[150,166,38],[214,166,38]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="${c[2]}" fill="url(#gLeaf)"/>`).join('')+
+        this.F.map((q,i)=>{const t=cl(lit-i);return t>0?`<circle cx="${q[0]}" cy="${q[1]}" r="${(3+5.5*t).toFixed(1)}" fill="url(#gFruit)"/><path d="M${q[0]} ${(q[1]-6*t).toFixed(1)} l2 -4" stroke="#2F5A22" stroke-width="1.6"/>`:'';}).join('')+`</g>`;}},
+
+    boat:{n:'المركب',h:'كل استغفار بيقرّب المركب من البر',f(p){return [290-200*p,176];},
+      d(p){const amp=14*(1-p)+2, x=290-200*p; let waves='';
+      for(let k=0;k<3;k++){let d='M-20 '+(192+k*20); for(let i=0;i<=13;i++) d+=` Q${i*30-5} ${(192+k*20-amp*(i%2?1:-1)).toFixed(1)} ${i*30+10} ${192+k*20}`; waves+=`<g class="drift" ${dl(k)}><path d="${d}" stroke="#E4F2F8" stroke-width="2.4" fill="none" opacity="${(.8-k*.2).toFixed(2)}"/></g>`;}
+      return cloudG(250,48,1.9,'url(#gCloudD)',(1-p)*0.95,'drift')+(p<.6?`<path d="M268 70 l-8 20 h8 l-8 22" stroke="#FFF1B8" stroke-width="3" fill="none" opacity="${((.6-p)*1.6).toFixed(2)}"/>`:'')+
+        `<rect y="182" width="360" height="90" fill="url(#gSea)"/>`+waves+
+        `<path d="M-10 204 Q30 168 76 176 L86 204Z" fill="url(#gLeaf)"/><rect x="40" y="124" width="13" height="54" fill="#F4EAD5"/><path d="M40 138 h13 M40 152 h13" stroke="#C8663E" stroke-width="5"/><path d="M36 124 H57 L46.5 110Z" fill="#C8663E"/>${halo(46,120,40,p,'gWarm')}
+        <g transform="translate(${x.toFixed(1)} 184)"><g class="bob"><path d="M-28 0 H28 L19 13 H-19Z" fill="url(#gWood)"/><path d="M0 -48 V0" stroke="#5E3E20" stroke-width="3"/><path d="M2 -46 L26 -6 H2Z" fill="#F7F0E4"/><path d="M-2 -40 L-20 -6 H-2Z" fill="#EDE2CF"/></g></g>`;}},
+
+    cage:{n:'القفص',h:'كل استغفار بيفك قضيب لحد ما العصفور يطير',f(p){const i=Math.min(8,Math.floor(p*9));return [140+i*10,150];},
+      d(p){const n=9, gone=p*n; let bars='';
+      for(let i=0;i<n;i++){const x=140+i*10, o=1-cl(gone-i); if(o>0) bars+=`<path d="M${x} 90 V200" stroke="#8A929C" stroke-width="3.5" opacity="${o.toFixed(2)}"/>`;}
+      const free=p>=1, bx=free?210:180, by=free?66:162;
+      return halo(180,140,110,p*0.7)+`<path d="M180 40 V50" stroke="#8A929C" stroke-width="3"/><circle cx="180" cy="38" r="5" fill="none" stroke="url(#gSteel)" stroke-width="2.5"/>
+        <path d="M136 90 Q180 40 224 90" fill="none" stroke="url(#gSteel)" stroke-width="4.5" opacity="${(1-p*0.7).toFixed(2)}"/>`+bars+
+        `<rect x="128" y="198" width="104" height="11" rx="4" fill="url(#gM)"/><path d="M150 170 H210" stroke="#8A6A44" stroke-width="3" opacity="${(1-p).toFixed(2)}"/>
+        <g transform="translate(${bx} ${by})"><g class="${free?'float':''}"><ellipse cx="0" cy="0" rx="15" ry="10.5" fill="url(#gBead)"/><circle cx="11" cy="-6" r="6.5" fill="url(#gBead)"/><path d="M16 -6 l7 2 l-7 2Z" fill="#E0853A"/><circle cx="13" cy="-7" r="1.4" fill="#222"/>
+          <g class="${free?'flap':''}"><path d="M-2 -3 q-14 ${free?-22:-6} -22 -2 q10 6 22 4Z" fill="#E0B13A"/></g><path d="M-14 2 l-9 4 l9 1Z" fill="#E0B13A"/></g></g>`+(free?sparkle(250,60,8,1)+sparkle(170,90,6,.9,.6):'');}},
+
+    mountain:{n:'الجبل',h:'كل استغفار خطوة لفوق',
+      pts:[[70,238],[120,216],[100,192],[150,172],[130,148],[175,128],[160,106],[190,86],[180,64]],
+      pos(p){const pts=this.pts;let L=0;const seg=[];for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(d);L+=d;}
+        let t=p*L;for(let i=0;i<seg.length;i++){if(t<=seg[i]){const a=pts[i],b=pts[i+1],f=t/seg[i];return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f];}t-=seg[i];}return pts[pts.length-1];},
+      f(p){return this.pos(p);},
+      d(p,A){const pos=this.pos(p), trail='M'+this.pts.map(q=>q.join(' ')).join(' L');
+      return `<path d="M14 252 L180 38 L346 252Z" fill="url(#gMount)"/><path d="M180 38 L346 252 H240Z" fill="#000" opacity=".12"/><path d="M180 38 L154 72 L169 67 L180 79 L193 67 L208 72Z" fill="#fff"/>
+        <path d="${trail}" fill="none" stroke="#DCE2EA" stroke-width="3" stroke-dasharray="4 5"/><path d="${trail}" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${(100*(1-p)).toFixed(1)}" fill="none" stroke="url(#gGold)" stroke-width="4"/>
+        <path d="M180 64 V34" stroke="#333" stroke-width="2.5"/><g class="${p>=1?'sway':''}" style="transform-origin:0% 50%"><path d="M180 34 L202 41 L180 48Z" fill="${p>=1?'url(#gGold)':'#8A8F98'}"/></g>${halo(180,40,40,p>=1?1:0)}
+        <circle cx="${pos[0].toFixed(1)}" cy="${(pos[1]-7).toFixed(1)}" r="8" fill="url(#gM)" stroke="#fff" stroke-width="2.5" class="pulseG"/>`;}},
+
+    sunrise:{n:'الشروق',h:'كل استغفار بيطلّع الشمس شوية',f(p){return [180,250-140*p];},
+      d(p){const cy=250-140*p; let rays=''; for(let i=0;i<12;i++){const a=Math.PI+i*Math.PI/11; rays+=`<path d="M${(180+50*Math.cos(a)).toFixed(1)} ${(cy+50*Math.sin(a)).toFixed(1)} L${(180+90*Math.cos(a)).toFixed(1)} ${(cy+90*Math.sin(a)).toFixed(1)}" stroke="#FFE8A0" stroke-width="4" stroke-linecap="round" opacity="${(0.7*p).toFixed(2)}"/>`;}
+      return `<rect width="360" height="272" fill="#FFB36B" opacity="${(0.4*p).toFixed(2)}"/>${halo(180,cy,150,0.3+0.7*p,'gWarm')}${rays}<circle cx="180" cy="${cy.toFixed(1)}" r="42" fill="url(#gSun)"/>
+        <path d="M0 220 Q90 198 180 214 T360 206 V272 H0Z" fill="#3A4863"/><path d="M0 240 Q120 222 240 238 T360 234 V272 H0Z" fill="#2A3650"/>`+
+        cloudG(80,90,.8,'url(#gCloudL)',.5*p,'drift')+cloudG(290,120,.7,'url(#gCloudL)',.45*p,'drift');}}
   };
   const MORDER=['scale','heart','page','clouds','lamp','water','window','seed','mirror','moon','constellation','candles','lantern','fog','chains','rose','beads','pattern','mosaic','rain','river','fruit','boat','cage','mountain','sunrise'];
   const mechOf=st=>st>=STAGES?'scale':MORDER[st%MORDER.length];
+  function burstSVG(x,y,n,spread,big){let o='';const R=rng(Math.floor(performance.now()));
+    for(let i=0;i<n;i++){const a=R()*Math.PI*2,d=spread*(0.5+R()*0.7);
+      o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(big?3+R()*3:2+R()*2).toFixed(1)}" fill="${i%3?LUM:'#FFD27A'}" class="pt" style="--dx:${(Math.cos(a)*d).toFixed(1)}px;--dy:${(Math.sin(a)*d-(big?10:6)).toFixed(1)}px;animation-delay:${(R()*0.08).toFixed(2)}s"/>`;}
+    if(big) o+=`<circle cx="${x}" cy="${y}" r="20" fill="none" stroke="${LUM}" stroke-width="3" class="ring"/>`;
+    return `<g class="burst">${o}</g>`;}
 
   let mechHoldSt=null;
   function curStage(){ return mechHoldSt!=null?mechHoldSt:stageOf(state.level||0); }
@@ -1114,16 +1237,34 @@ svg.scale.arrive{animation:arrive .8s ease}
     const st=curStage(), m=mechOf(st), ms=el('mech');
     if(m==='scale'){ ms.style.display='none'; svg.style.display=''; return; }
     svg.style.display='none'; ms.style.display='';
-    ms.innerHTML='<defs>'+glowF+'</defs>'+MECH[m].d(stageProg(),ACC[Math.floor(Math.min(st,STAGES-1)/10)%10]);
+    ms.style.setProperty('--t',(performance.now()/1000).toFixed(2));
+    const A=ACC[Math.floor(Math.min(st,STAGES-1)/10)%10];
+    ms.innerHTML=DEFS(A)+MECH[m].d(stageProg(),A);
   }
-  function tapMech(){ if(reduce) return; const ms=el('mech'); ms.classList.remove('tap'); void ms.getBBox(); ms.classList.add('tap'); }
+  function burstAt(big){
+    if(reduce) return;
+    const m=mechOf(curStage());
+    if(m==='scale'){
+      const tr=(panR.getAttribute('transform')||'').match(/translate\(([-\d.]+) ([-\d.]+)\)/); if(!tr) return;
+      const g=document.createElementNS(NS,'g'); g.innerHTML=burstSVG(+tr[1],+tr[2]+(big?60:72),big?18:8,big?70:34,big);
+      svg.appendChild(g); setTimeout(()=>g.remove(),1000); return;
+    }
+    const M=MECH[m], pt=M.f?M.f.call(M,stageProg()):[180,135];
+    el('mech').insertAdjacentHTML('beforeend',big?burstSVG(180,135,22,110,true):burstSVG(pt[0],pt[1],8,34,false));
+  }
+  function tapMech(big){ if(reduce) return; const ms=el('mech'); if(ms.style.display!=='none'){ ms.classList.remove('tap'); void ms.getBBox(); ms.classList.add('tap'); } burstAt(!!big); }
 
   const JAMAA={name:'ميزان الجماعة',m:'#D4A937',d:'#8F6B12',post:'minaret',base:'arch',beam:'ornate',top:'crescent',pan:'deep',str:'chain',
     bs:'rock',bc:BADC.stone[0],be:BADC.stone[1],gs:'star8',gc:GOODC.star[0],ge:GOODC.star[1]};
   function applyTheme(){
     shownTheme=state.level||0; const t=curT=themeFor(shownTheme);
-    staticG.innerHTML=postSVG(t)+baseSVG(t);
-    beam.innerHTML=beamSVG(t)+topSVG(t);
+    const lt=c=>{const n=parseInt(c.slice(1),16);let r=n>>16,g=(n>>8)&255,b=n&255;r=Math.round(r+(255-r)*.4);g=Math.round(g+(255-g)*.4);b=Math.round(b+(255-b)*.4);return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);};
+    el('sdefs').innerHTML=`<linearGradient id="sgM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${lt(t.m)}"/><stop offset=".55" stop-color="${t.m}"/><stop offset="1" stop-color="${t.d}"/></linearGradient>
+      <linearGradient id="sgMh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${t.d}"/><stop offset=".5" stop-color="${lt(t.m)}"/><stop offset="1" stop-color="${t.d}"/></linearGradient>
+      <linearGradient id="sgD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${t.m}"/><stop offset="1" stop-color="${t.d}"/></linearGradient>
+      <filter id="sblur" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="3"/></filter>`;
+    staticG.innerHTML=`<ellipse cx="180" cy="268" rx="86" ry="6" fill="#000" opacity=".22" filter="url(#sblur)"/>`+gradz(postSVG(t)+baseSVG(t),t);
+    beam.innerHTML=gradz(beamSVG(t)+topSVG(t),t);
     bad=buildPan(panL,t,'bad'); good=buildPan(panR,t,'good');
     el('stageText').innerHTML='';
     const sp=document.createElement('span'); sp.textContent='الميزان '+fmt(shownTheme+1)+(shownTheme<TN?' من '+fmt(TN):'')+' · ';
@@ -1730,8 +1871,8 @@ svg.scale.arrive{animation:arrive .8s ease}
     if(full){
       const before=stageOf(state.level||0), mB=mechOf(before);
       state.level=(state.level||0)+1; const changed=stageOf(state.level)>before; if(changed) stageDone=before; save();
-      if(mB==='scale'){ holding=true; render(); setTimeout(gather,550); }
-      else if(changed){ mechHoldSt=before; pendingStars++; render(); tapMech(); flyStar(); setTimeout(()=>{
+      if(mB==='scale'){ holding=true; render(); burstAt(true); setTimeout(gather,550); }
+      else if(changed){ mechHoldSt=before; pendingStars++; render(); tapMech(true); flyStar(); setTimeout(()=>{
           const ms=el('mech'); if(!reduce) ms.classList.add('fadeout');
           setTimeout(()=>{ mechHoldSt=null; ms.classList.remove('fadeout'); applyTheme(); render(); if(!reduce){ ms.classList.add('arrive'); svg.classList.add('arrive'); setTimeout(()=>{ms.classList.remove('arrive');svg.classList.remove('arrive');},900);} announce(); },reduce?0:420);
         },1300); }
