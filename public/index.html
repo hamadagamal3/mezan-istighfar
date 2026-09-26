@@ -49,6 +49,8 @@
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 html,body{height:100%}
+html,body{overflow-x:hidden}
+@supports (overflow:clip){html,body{overflow-x:clip}}
 body{margin:0;background:var(--bg);color:var(--text);
   font-family:'IBM Plex Sans Arabic',system-ui,'Segoe UI',Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
 main{max-width:460px;margin:0 auto;padding:18px 20px 36px;display:flex;flex-direction:column;align-items:center;text-align:center}
@@ -386,9 +388,9 @@ svg.scale.arrive{animation:arrive .8s ease}
 @keyframes spin{to{transform:rotate(360deg)}}
 .pt{animation:pt .75s ease-out forwards;transform-box:fill-box;transform-origin:center}
 @keyframes pt{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
-.ring{animation:ring .8s ease-out forwards;transform-box:fill-box;transform-origin:center}
-@keyframes ring{from{transform:scale(.3);opacity:.9}to{transform:scale(4);opacity:0}}
-@media (prefers-reduced-motion: reduce){.mech [class]{animation:none!important}.pt,.ring{display:none}}
+.bring{animation:bring .8s ease-out forwards;transform-box:fill-box;transform-origin:center}
+@keyframes bring{from{transform:scale(.3);opacity:.9}to{transform:scale(4);opacity:0}}
+@media (prefers-reduced-motion: reduce){.mech [class]{animation:none!important}.pt,.bring{display:none}}
 </style>
 </head>
 <body>
@@ -1222,7 +1224,7 @@ svg.scale.arrive{animation:arrive .8s ease}
   function burstSVG(x,y,n,spread,big){let o='';const R=rng(Math.floor(performance.now()));
     for(let i=0;i<n;i++){const a=R()*Math.PI*2,d=spread*(0.5+R()*0.7);
       o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(big?3+R()*3:2+R()*2).toFixed(1)}" fill="${i%3?LUM:'#FFD27A'}" class="pt" style="--dx:${(Math.cos(a)*d).toFixed(1)}px;--dy:${(Math.sin(a)*d-(big?10:6)).toFixed(1)}px;animation-delay:${(R()*0.08).toFixed(2)}s"/>`;}
-    if(big) o+=`<circle cx="${x}" cy="${y}" r="20" fill="none" stroke="${LUM}" stroke-width="3" class="ring"/>`;
+    if(big) o+=`<circle cx="${x}" cy="${y}" r="20" fill="none" stroke="${LUM}" stroke-width="3" class="bring"/>`;
     return `<g class="burst">${o}</g>`;}
 
   let mechHoldSt=null;
@@ -1302,7 +1304,7 @@ svg.scale.arrive{animation:arrive .8s ease}
     const n=Math.max(0,Math.floor(state.today/N)-pendingStars);
     if(n===shownStars) return;
     const sky=el('sky'), grew=shownStars>=0 && n>shownStars; sky.innerHTML='';
-    if(n===0){const t=document.createElement('span');t.className='empty';t.textContent='أول نجمة لما الميزان يتملي';sky.appendChild(t);}
+    if(n===0){const t=document.createElement('span');t.className='empty';t.textContent='أول نجمة بعد ١٢ استغفارة';sky.appendChild(t);}
     const show=Math.min(n,14);
     for(let i=0;i<show;i++) sky.appendChild(starSvg(grew && i===show-1));
     if(n>show){const m=document.createElement('span');m.className='more';m.textContent='+'+fmt(n-show);sky.appendChild(m);}
